@@ -21,10 +21,14 @@
  * @category    Magento
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Chooser_LayoutTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -34,28 +38,31 @@ class Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Chooser_LayoutTest extend
 
     protected function setUp()
     {
+        parent::setUp();
+
         $layoutUtility = new Mage_Core_Utility_Layout($this);
         $pageTypesFixture = __DIR__ . '/_files/_page_types_with_containers.xml';
-        $this->_block = $this->getMock(
-            'Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Chooser_Layout',
-            array('_getLayoutUpdate'),
-            array(array(
+        $args = array(
+            'context' => Mage::getSingleton('Mage_Core_Block_Template_Context'),
+            'data' => array(
                 'name'  => 'page_type',
                 'id'    => 'page_types_select',
                 'class' => 'page-types-select',
                 'title' => 'Page Types Select',
-            ))
+            )
+        );
+        $this->_block = $this->getMock(
+            'Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Chooser_Layout',
+            array('_getLayoutMerge'), $args
         );
         $this->_block
             ->expects($this->any())
-            ->method('_getLayoutUpdate')
-            ->will($this->returnValue($layoutUtility->getLayoutUpdateFromFixture($pageTypesFixture)))
+            ->method('_getLayoutMerge')
+            ->will($this->returnValue($layoutUtility->getLayoutUpdateFromFixture(
+            $pageTypesFixture,
+            $layoutUtility->getLayoutDependencies()
+        )))
         ;
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
     }
 
     public function testToHtml()

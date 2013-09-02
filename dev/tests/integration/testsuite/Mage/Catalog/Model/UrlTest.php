@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,12 +39,7 @@ class Mage_Catalog_Model_UrlTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Url;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Url');
     }
 
     /**
@@ -55,7 +50,8 @@ class Mage_Catalog_Model_UrlTest extends PHPUnit_Framework_TestCase
      */
     protected function _loadRewrite($idPath)
     {
-        $rewrite = new Mage_Core_Model_Url_Rewrite();
+        /** @var $rewrite Mage_Core_Model_Url_Rewrite */
+        $rewrite = Mage::getModel('Mage_Core_Model_Url_Rewrite');
         $rewrite->loadByIdPath($idPath);
         return $rewrite;
     }
@@ -155,12 +151,13 @@ class Mage_Catalog_Model_UrlTest extends PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             'simple-product-1.html',
-            $this->_model->getUnusedPath(1, 'simple-product.html', 'product/2')
+            $this->_model->getUnusedPath(1, 'simple-product.html', 'product/2', 'simple-product')
         );
 
         $this->markTestIncomplete('Bug MAGETWO-144');
 
-        $this->assertEquals('category-3.html', $this->_model->getUnusedPath(1, 'category-2.html', 'category/5'));
+        $this->assertEquals('category-3.html', $this->_model->getUnusedPath(1, 'category-2.html', 'category/5',
+            'category-2'));
     }
 
     public function testGetProductUrlSuffix()

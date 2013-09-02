@@ -21,16 +21,30 @@
  * @category    Magento
  * @package     Mage_Page
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 class Mage_Page_Block_Html_FooterTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var Mage_Core_Model_Theme
+     */
+    protected $_theme;
+
+    protected function setUp()
+    {
+        Mage::getDesign()->setDefaultDesignTheme();
+        $this->_theme = Mage::getDesign()->getDesignTheme();
+    }
+
     public function testGetCacheKeyInfo()
     {
-        $block = new Mage_Page_Block_Html_Footer;
+        $block = Mage::app()->getLayout()->createBlock('Mage_Page_Block_Html_Footer');
         $storeId = Mage::app()->getStore()->getId();
-        $this->assertEquals(array('PAGE_FOOTER', $storeId, 0, 'default', 'default', null), $block->getCacheKeyInfo());
+        $this->assertEquals(
+            array('PAGE_FOOTER', $storeId, 0, $this->_theme->getId(), null),
+            $block->getCacheKeyInfo()
+        );
     }
 }

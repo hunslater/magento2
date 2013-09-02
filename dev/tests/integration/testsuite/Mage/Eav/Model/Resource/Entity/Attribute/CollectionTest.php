@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Eav_Model_Resource_Entity_Attribute_CollectionTest extends PHPUnit_Fr
 
     protected function setUp()
     {
-        $this->_model = new Mage_Eav_Model_Resource_Entity_Attribute_Collection();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getResourceModel('Mage_Eav_Model_Resource_Entity_Attribute_Collection');
     }
 
     /**
@@ -63,7 +58,7 @@ class Mage_Eav_Model_Resource_Entity_Attribute_CollectionTest extends PHPUnit_Fr
 
     public function testSetAttributeGroupFilter()
     {
-        $collection = new Mage_Eav_Model_Resource_Entity_Attribute_Collection();
+        $collection = Mage::getResourceModel('Mage_Eav_Model_Resource_Entity_Attribute_Collection');
         $groupsPresent = $this->_getGroups($collection);
         $includeGroupId = current($groupsPresent);
 

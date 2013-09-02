@@ -21,12 +21,14 @@
  * @category    Magento
  * @package     Magento_Captcha
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test captcha observer behavior
+ *
+ * @magentoAppArea adminhtml
  */
 class Mage_Captcha_Model_ObserverTest extends Magento_Test_TestCase_ControllerAbstract
 {
@@ -37,7 +39,9 @@ class Mage_Captcha_Model_ObserverTest extends Magento_Test_TestCase_ControllerAb
      */
     public function testBackendLoginActionWithInvalidCaptchaReturnsError()
     {
-        $this->markTestIncomplete('MAGETWO-1662');
+        if (Magento_Test_Helper_Bootstrap::getInstance()->getDbVendorName() != 'mysql') {
+            $this->markTestIncomplete('MAGETWO-1662');
+        }
         Mage::getSingleton('Mage_Backend_Model_Url')->turnOffSecretKey();
 
         $post = array(
@@ -50,26 +54,28 @@ class Mage_Captcha_Model_ObserverTest extends Magento_Test_TestCase_ControllerAb
             )
         );
         $this->getRequest()->setPost($post);
-        $this->dispatch('/admin');
-        $this->assertContains(Mage::helper('Mage_Captcha')->__('Incorrect CAPTCHA.'), $this->getResponse()->getBody());
+        $this->dispatch('backend/admin');
+        $this->assertContains(Mage::helper('Mage_Captcha')->__('Incorrect CAPTCHA'), $this->getResponse()->getBody());
     }
 
     /**
-     * @magentoConfigFixture current_store admin/captcha/enable 1
-     * @magentoConfigFixture current_store admin/captcha/forms backend_login
-     * @magentoConfigFixture current_store admin/captcha/mode after_fail
-     * @magentoConfigFixture current_store admin/captcha/failed_attempts_login 1
+     * @magentoConfigFixture admin_store admin/captcha/enable 1
+     * @magentoConfigFixture admin_store admin/captcha/forms backend_login
+     * @magentoConfigFixture admin_store admin/captcha/mode after_fail
+     * @magentoConfigFixture admin_store admin/captcha/failed_attempts_login 1
      * @magentoDbIsolation enabled
      * @magentoAppIsolation enabled
      */
     public function testCaptchaIsRequiredAfterFailedLoginAttempts()
     {
-        $this->markTestIncomplete('MAGETWO-1662');
+        if (Magento_Test_Helper_Bootstrap::getInstance()->getDbVendorName() != 'mysql') {
+            $this->markTestIncomplete('MAGETWO-1662');
+        }
         Mage::app()->setCurrentStore(0);
         $captchaModel = Mage::helper('Mage_Captcha_Helper_Data')->getCaptcha('backend_login');
 
         try {
-            $authModel = new Mage_Backend_Model_Auth();
+            $authModel = Mage::getModel('Mage_Backend_Model_Auth');
             $authModel->login(
                 Magento_Test_Bootstrap::ADMIN_NAME,
                 'wrong_password'
@@ -97,5 +103,22 @@ class Mage_Captcha_Model_ObserverTest extends Magento_Test_TestCase_ControllerAb
         ));
         $this->dispatch('backend/admin/auth/forgotpassword');
         $this->assertRedirect($this->stringContains('backend/admin/auth/forgotpassword'));
+    }
+
+    /**
+     * @magentoDbIsolation enabled
+     * @magentoAppIsolation enabled
+     * @magentoConfigFixture admin_store admin/captcha/enable 1
+     * @magentoConfigFixture admin_store admin/captcha/forms backend_forgotpassword
+     * @magentoConfigFixture admin_store admin/captcha/mode always
+     */
+    public function testCheckUnsuccessfulMessageWhenCaptchaFailed()
+    {
+        Mage::getSingleton('Mage_Backend_Model_Url')->turnOffSecretKey();
+        $this->getRequest()->setPost(array('email'   => 'dummy@dummy.com', 'captcha' => '1234'));
+        $this->dispatch('backend/admin/auth/forgotpassword');
+        $this->assertSessionMessages(
+            $this->equalTo(array('Incorrect CAPTCHA')), Mage_Core_Model_Message::ERROR, 'Mage_Backend_Model_Session'
+        );
     }
 }

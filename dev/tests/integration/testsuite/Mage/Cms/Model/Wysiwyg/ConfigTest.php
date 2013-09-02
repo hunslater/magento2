@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Cms_Model_Wysiwyg_ConfigTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -34,12 +37,8 @@ class Mage_Cms_Model_Wysiwyg_ConfigTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Cms_Model_Wysiwyg_Config;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        Mage::getConfig()->setCurrentAreaCode(Mage::helper('Mage_Backend_Helper_Data')->getAreaCode());
+        $this->_model = Mage::getModel('Mage_Cms_Model_Wysiwyg_Config');
     }
 
     /**
@@ -57,8 +56,8 @@ class Mage_Cms_Model_Wysiwyg_ConfigTest extends PHPUnit_Framework_TestCase
     public function testGetConfigJsUrls()
     {
         $config = $this->_model->getConfig();
-        $this->assertStringMatchesFormat('http://localhost/pub/js/%s', $config->getPopupCss());
-        $this->assertStringMatchesFormat('http://localhost/pub/js/%s', $config->getContentCss());
+        $this->assertStringMatchesFormat('http://localhost/pub/lib/%s', $config->getPopupCss());
+        $this->assertStringMatchesFormat('http://localhost/pub/lib/%s', $config->getContentCss());
     }
 
     /**

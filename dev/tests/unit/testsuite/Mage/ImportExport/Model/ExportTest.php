@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_ImportExport
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -44,9 +44,9 @@ class Mage_ImportExport_Model_ExportTest extends PHPUnit_Framework_TestCase
      */
     protected function _getMageImportExportModelExportMock()
     {
-        /** @var $mockEntityAbstract Mage_ImportExport_Model_Export_Entity_V2_Abstract */
+        /** @var $mockEntityAbstract Mage_ImportExport_Model_Export_EntityAbstract */
         $mockEntityAbstract = $this->getMockForAbstractClass(
-            'Mage_ImportExport_Model_Export_Entity_V2_Abstract',
+            'Mage_ImportExport_Model_Export_EntityAbstract',
             array(),
             '',
             false

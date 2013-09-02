@@ -20,7 +20,7 @@
  *
  * @category    tests
  * @package     static
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -50,39 +50,58 @@ class Php_LiveCodeTest extends PHPUnit_Framework_TestCase
         if (!is_dir(self::$_reportDir)) {
             mkdir(self::$_reportDir, 0777);
         }
-        self::$_whiteList = self::_readLists(__DIR__ .'/_files/whitelist/*.txt');
-        self::$_blackList = self::_readLists(__DIR__ .'/_files/blacklist/*.txt');
+        self::$_whiteList = self::_readLists(__DIR__ . '/_files/whitelist/*.txt');
+        self::$_blackList = self::_readLists(__DIR__ . '/_files/blacklist/*.txt');
     }
 
     public function testCodeStyle()
     {
         $reportFile = self::$_reportDir . '/phpcs_report.xml';
-        $cmd = new Inspection_CodeSniffer_Command(realpath(__DIR__ . '/_files/phpcs'), $reportFile);
-        if (!$cmd->canRun()) {
-            $this->markTestSkipped('PHP Code Sniffer command is not available.');
+        $wrapper = new CodingStandard_Tool_CodeSniffer_Wrapper();
+        $codeSniffer = new CodingStandard_Tool_CodeSniffer(realpath(__DIR__ . '/_files/phpcs'), $reportFile, $wrapper);
+        if (!$codeSniffer->canRun()) {
+            $this->markTestSkipped('PHP Code Sniffer is not installed.');
         }
-        $cmd->setExtensions(array('php', 'phtml'));
-        $this->assertTrue($cmd->run(self::$_whiteList, self::$_blackList), $cmd->getLastRunMessage());
+        $result = $codeSniffer->run(self::$_whiteList, self::$_blackList, array('php', 'phtml'));
+        $this->assertEquals(0, $result,
+            "PHP Code Sniffer has found $result error(s): See detailed report in $reportFile"
+        );
     }
 
     public function testCodeMess()
     {
         $reportFile = self::$_reportDir . '/phpmd_report.xml';
-        $cmd = new Inspection_MessDetector_Command(realpath(__DIR__ . '/_files/phpmd/ruleset.xml'), $reportFile);
-        if (!$cmd->canRun()) {
-            $this->markTestSkipped('PHP Mess Detector command line is not available.');
+        $codeMessDetector = new CodingStandard_Tool_CodeMessDetector(realpath(__DIR__ . '/_files/phpmd/ruleset.xml'),
+            $reportFile
+        );
+
+        if (!$codeMessDetector->canRun()) {
+            $this->markTestSkipped('PHP Mess Detector is not available.');
         }
-        $this->assertTrue($cmd->run(self::$_whiteList, self::$_blackList), $cmd->getLastRunMessage());
+
+        $this->assertEquals(
+            PHP_PMD_TextUI_Command::EXIT_SUCCESS, $codeMessDetector->run(self::$_whiteList, self::$_blackList),
+            "PHP Code Mess has found error(s): See detailed report in $reportFile"
+        );
     }
 
     public function testCopyPaste()
     {
         $reportFile = self::$_reportDir . '/phpcpd_report.xml';
-        $cmd = new Inspection_CopyPasteDetector_Command($reportFile);
-        if (!$cmd->canRun()) {
-            $this->markTestSkipped('PHP Copy/Paste Detector command line is not available.');
+        $copyPasteDetector = new CodingStandard_Tool_CopyPasteDetector($reportFile);
+
+        if (!$copyPasteDetector->canRun()) {
+            $this->markTestSkipped('PHP Copy/Paste Detector is not available.');
         }
-        $this->assertTrue($cmd->run(self::$_whiteList, self::$_blackList), $cmd->getLastRunMessage());
+
+        $blackList = array();
+        foreach (glob(__DIR__ . '/_files/phpcpd/blacklist/*.txt') as $list) {
+            $blackList = array_merge($blackList, file($list, FILE_IGNORE_NEW_LINES));
+        }
+
+        $this->assertTrue($copyPasteDetector->run(array(), $blackList),
+            "PHP Copy/Paste Detector has found error(s): See detailed report in $reportFile"
+        );
     }
 
     /**
@@ -92,16 +111,31 @@ class Php_LiveCodeTest extends PHPUnit_Framework_TestCase
      *
      * @param string $globPattern
      * @return array
+     * @throws Exception if any of the patterns don't return any result
      */
     protected static function _readLists($globPattern)
     {
-        $result = array();
+        $patterns = array();
         foreach (glob($globPattern) as $list) {
-            $result = array_merge($result, file($list));
+            $patterns = array_merge($patterns, file($list, FILE_IGNORE_NEW_LINES));
         }
-        $map = function ($value) {
-            return trim($value) ? Utility_Files::init()->getPathToSource() . '/' . trim($value) : '';
-        };
-        return array_filter(array_map($map, $result), 'file_exists');
+
+        // Expand glob patterns
+        $result = array();
+        foreach ($patterns as $pattern) {
+            if (0 === strpos($pattern, '#')) {
+                continue;
+            }
+            /**
+             * Note that glob() for directories will be returned as is,
+             * but passing directory is supported by the tools (phpcpd, phpmd, phpcs)
+             */
+            $files = glob(Utility_Files::init()->getPathToSource() . '/' . $pattern, GLOB_BRACE);
+            if (empty($files)) {
+                throw new Exception("The glob() pattern '{$pattern}' didn't return any result.");
+            }
+            $result = array_merge($result, $files);
+        }
+        return $result;
     }
 }

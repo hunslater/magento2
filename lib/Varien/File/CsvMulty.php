@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_File
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
  
@@ -32,7 +32,7 @@
 
 require_once 'Varien/File/Csv.php';
 
-class Varien_File_Csv_Multy extends Varien_File_Csv {
+class Varien_File_CsvMulty extends Varien_File_Csv {
 	/**
      * Retrieve CSV file data as pairs with duplicates
      *

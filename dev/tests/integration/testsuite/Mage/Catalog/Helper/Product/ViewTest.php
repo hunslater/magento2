@@ -21,11 +21,11 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-require Mage::getBaseDir() . '/app/code/core/Mage/Catalog/controllers/ProductController.php';
+require Mage::getBaseDir() . '/app/code/Mage/Catalog/controllers/ProductController.php';
 
 class Mage_Catalog_Helper_Product_ViewTest extends PHPUnit_Framework_TestCase
 {
@@ -41,12 +41,24 @@ class Mage_Catalog_Helper_Product_ViewTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_helper = new Mage_Catalog_Helper_Product_View;
+        Mage::getDesign()->setDefaultDesignTheme();
+        $this->_helper = Mage::helper('Mage_Catalog_Helper_Product_View');
         $request = new Magento_Test_Request();
         $request->setRouteName('catalog')
             ->setControllerName('product')
             ->setActionName('view');
-        $this->_controller = new Mage_Catalog_ProductController($request, new Magento_Test_Response);
+        $arguments = array(
+            'request' => $request,
+            'response' => new Magento_Test_Response(),
+        );
+        $context = Mage::getObjectManager()->create('Mage_Core_Controller_Varien_Action_Context', $arguments);
+        $this->_controller = Mage::getModel(
+            'Mage_Catalog_ProductController',
+            array(
+                'context'  => $context,
+                'areaCode' => 'frontend',
+            )
+        );
     }
 
     /**
@@ -65,7 +77,8 @@ class Mage_Catalog_Helper_Product_ViewTest extends PHPUnit_Framework_TestCase
     public function testInitProductLayout()
     {
         $uniqid = uniqid();
-        $product = new Mage_Catalog_Model_Product;
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->setTypeId(Mage_Catalog_Model_Product_Type::DEFAULT_TYPE)->setId(99)->setUrlKey($uniqid);
         Mage::register('product', $product);
 
@@ -78,7 +91,7 @@ class Mage_Catalog_Helper_Product_ViewTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @magentoDataFixture Mage/Catalog/_files/two_products.php
+     * @magentoDataFixture Mage/Catalog/_files/multiple_products.php
      * @magentoAppIsolation enabled
      */
     public function testPrepareAndRender()
@@ -89,21 +102,69 @@ class Mage_Catalog_Helper_Product_ViewTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @magentoDataFixture Mage/Catalog/_files/two_products.php
      * @expectedException Mage_Core_Exception
      * @magentoAppIsolation enabled
      */
     public function testPrepareAndRenderWrongController()
     {
-        $controller = new Mage_Core_Controller_Front_Action(new Magento_Test_Request, new Magento_Test_Response);
+        $controller = Mage::getModel(
+            'Mage_Core_Controller_Front_Action',
+            array(
+                'request'  => new Magento_Test_Request,
+                'response' => new Magento_Test_Response,
+                'areaCode' => 'frontend'
+            )
+        );
         $this->_helper->prepareAndRender(10, $controller);
     }
 
     /**
+     * @magentoAppIsolation enabled
      * @expectedException Mage_Core_Exception
      */
     public function testPrepareAndRenderWrongProduct()
     {
         $this->_helper->prepareAndRender(999, $this->_controller);
+    }
+
+    /**
+     * Test for _getSessionMessageModels
+     *
+     * @magentoDataFixture Mage/Catalog/_files/multiple_products.php
+     * @magentoAppIsolation enabled
+     * @covers Mage_Catalog_Helper_Product_View::_getSessionMessageModels
+     */
+    public function testGetSessionMessageModels()
+    {
+        $expectedMessages = array(
+            'Mage_Catalog_Model_Session'  => 'catalog message',
+            'Mage_Checkout_Model_Session' => 'checkout message',
+        );
+
+        // add messages
+        foreach ($expectedMessages as $sessionModel => $messageText) {
+            /** @var $session Mage_Core_Model_Session_Abstract */
+            $session = Mage::getSingleton($sessionModel);
+            $session->addNotice($messageText);
+        }
+
+        // _getSessionMessageModels invokes inside prepareAndRender
+        $this->_helper->prepareAndRender(10, $this->_controller);
+
+        // assert messages
+        $actualMessages = $this->_controller->getLayout()
+            ->getMessagesBlock()
+            ->getMessages();
+        $this->assertSameSize($expectedMessages, $actualMessages);
+
+        sort($expectedMessages);
+
+        /** @var $message Mage_Core_Model_Message_Notice */
+        foreach ($actualMessages as $key => $message) {
+            $actualMessages[$key] = $message->getText();
+        }
+        sort($actualMessages);
+
+        $this->assertEquals($expectedMessages, $actualMessages);
     }
 }

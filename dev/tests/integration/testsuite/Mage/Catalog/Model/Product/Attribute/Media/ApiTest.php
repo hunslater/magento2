@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -41,7 +41,7 @@ class Mage_Catalog_Model_Product_Attribute_Media_ApiTest extends PHPUnit_Framewo
     /**
      * @var string
      */
-    protected static $_fixtureDir;
+    protected static $_filesDir;
 
     /**
      * @var string
@@ -50,32 +50,30 @@ class Mage_Catalog_Model_Product_Attribute_Media_ApiTest extends PHPUnit_Framewo
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product_Attribute_Media_Api;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product_Attribute_Media_Api');
     }
 
     public static function setUpBeforeClass()
     {
-        self::$_fixtureDir = realpath(__DIR__ . '/../../../../_files');
+        self::$_filesDir = realpath(__DIR__ . '/../../../../_files');
         self::$_mediaTmpDir = Mage::getSingleton('Mage_Catalog_Model_Product_Media_Config')->getBaseTmpMediaPath();
-        mkdir(self::$_mediaTmpDir . "/m/a", 0777, true);
-        copy(self::$_fixtureDir . '/magento_image.jpg', self::$_mediaTmpDir . '/m/a/magento_image.jpg');
+        $ioFile = new Varien_Io_File();
+        $ioFile->mkdir(self::$_mediaTmpDir . "/m/a", 0777, true);
+        copy(self::$_filesDir . '/magento_image.jpg', self::$_mediaTmpDir . '/m/a/magento_image.jpg');
     }
 
     public static function tearDownAfterClass()
     {
-        Varien_Io_File::rmdirRecursive(self::$_mediaTmpDir);
+        Varien_Io_File::rmdirRecursive(self::$_mediaTmpDir . "/m/a");
+        /** @var $config Mage_Catalog_Model_Product_Media_Config */
         $config = Mage::getSingleton('Mage_Catalog_Model_Product_Media_Config');
         Varien_Io_File::rmdirRecursive($config->getBaseMediaPath());
     }
 
     public static function productMediaFixture()
     {
-        $product = new Mage_Catalog_Model_Product();
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->load(1);
         $product->setTierPrice(array());
         $product->setData('media_gallery', array('images' => array(array('file' => '/m/a/magento_image.jpg',),)));
@@ -111,7 +109,7 @@ class Mage_Catalog_Model_Product_Attribute_Media_ApiTest extends PHPUnit_Framewo
         $data = array(
             'file' => array(
                 'mime'      => 'image/jpeg',
-                'content'   => base64_encode(file_get_contents(self::$_fixtureDir.'/magento_small_image.jpg'))
+                'content'   => base64_encode(file_get_contents(self::$_filesDir.'/magento_small_image.jpg'))
             )
         );
         $this->_model->create(1, $data);
@@ -145,7 +143,7 @@ class Mage_Catalog_Model_Product_Attribute_Media_ApiTest extends PHPUnit_Framewo
         $data = array(
             'file' => array(
                 'mime'      => 'image/jpeg',
-                'content'   => base64_encode(file_get_contents(self::$_fixtureDir.'/magento_small_image.jpg'))
+                'content'   => base64_encode(file_get_contents(self::$_filesDir.'/magento_small_image.jpg'))
             )
         );
         $this->assertTrue($this->_model->update(1, $file, $data));

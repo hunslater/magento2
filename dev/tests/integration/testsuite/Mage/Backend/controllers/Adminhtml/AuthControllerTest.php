@@ -21,13 +21,13 @@
  * @category    Mage
  * @package     Mage_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * Test class for Mage_Backend_Adminhtml_AuthController.
- *
+ * Test class for Mage_Backend_Adminhtml_AuthController
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Adminhtml_AuthControllerTest extends Magento_Test_TestCase_ControllerAbstract
 {
@@ -77,8 +77,10 @@ class Mage_Backend_Adminhtml_AuthControllerTest extends Magento_Test_TestCase_Co
     {
         $this->dispatch('backend/admin/auth/login');
         $this->assertFalse($this->getResponse()->isRedirect());
-        $expected = 'Log in to Admin Panel';
-        $this->assertContains($expected, $this->getResponse()->getBody(), 'There is no login form');
+
+        $body = $this->getResponse()->getBody();
+        $this->assertSelectCount('form#login-form input#username[type=text]', true, $body);
+        $this->assertSelectCount('form#login-form input#login[type=password]', true, $body);
     }
 
     /**
@@ -91,7 +93,10 @@ class Mage_Backend_Adminhtml_AuthControllerTest extends Magento_Test_TestCase_Co
         $this->_login();
 
         $this->dispatch('backend/admin/auth/login');
-        $expected = Mage::getSingleton('Mage_Backend_Model_Url')->getUrl('adminhtml/dashboard');
+        /** @var $backendUrlModel Mage_Backend_Model_Url */
+        $backendUrlModel = Mage::getObjectManager()->get('Mage_Backend_Model_Url');
+        $url = $backendUrlModel->getStartupPageUrl();
+        $expected = $backendUrlModel->getUrl($url);
         $this->assertRedirect($this->stringStartsWith($expected));
 
         $this->_logout();
@@ -127,7 +132,7 @@ class Mage_Backend_Adminhtml_AuthControllerTest extends Magento_Test_TestCase_Co
         $this->_login();
         $this->dispatch('backend/admin/auth/logout');
         $this->assertRedirect($this->equalTo(Mage::helper('Mage_Backend_Helper_Data')->getHomePageUrl()));
-        $this->assertFalse($this->_session->isLoggedIn(), 'User is not logouted');
+        $this->assertFalse($this->_session->isLoggedIn(), 'User is not logged out.');
     }
 
     /**
@@ -175,7 +180,7 @@ class Mage_Backend_Adminhtml_AuthControllerTest extends Magento_Test_TestCase_Co
     {
         $this->getRequest()->setPost($params);
         $this->dispatch('backend/admin/auth/login');
-        $this->assertContains('Invalid User Name or Password', $this->getResponse()->getBody());
+        $this->assertContains('Please correct the user name or password.', $this->getResponse()->getBody());
     }
 
     public function incorrectLoginDataProvider()

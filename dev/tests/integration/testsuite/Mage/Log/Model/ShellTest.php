@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Log
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -35,7 +35,7 @@ class Mage_Log_Model_ShellTest extends PHPUnit_Framework_TestCase
      */
     protected function _getModel($entryPoint = 'fake.php')
     {
-        return new Mage_Log_Model_Shell($entryPoint);
+        return Mage::getModel('Mage_Log_Model_Shell', array('entryPoint' => $entryPoint));
     }
 
     /**

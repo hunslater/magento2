@@ -21,7 +21,7 @@
  * @category    tests
  * @package     static
  * @subpackage  Legacy
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -101,17 +101,18 @@ class Legacy_LayoutTest extends PHPUnit_Framework_TestCase
      */
     public function testLayoutFile($layoutFile)
     {
-        $suggestion = sprintf(Legacy_ObsoleteCodeTest::SUGGESTION_MESSAGE, 'addCss/addJss');
         $layoutXml = simplexml_load_file($layoutFile);
 
         $this->_testObsoleteReferences($layoutXml);
 
-        $selectorHeadBlock = '(name()="block" or name()="reference") and (@name="head" or @name="convert_root_head")';
+        $selectorHeadBlock = '
+            (name()="block" or name()="reference") and (@name="head" or @name="convert_root_head" or @name="vde_head")
+        ';
         $this->assertSame(array(),
             $layoutXml->xpath(
                 '//*[' . $selectorHeadBlock . ']/action[@method="addItem"]'
             ),
-            "Mage_Page_Block_Html_Head::addItem is obsolete. $suggestion"
+            'Mage_Page_Block_Html_Head::addItem is obsolete. Use addCss()/addJs() instead.'
         );
         $this->assertSame(array(),
             $layoutXml->xpath(
@@ -130,7 +131,7 @@ class Legacy_LayoutTest extends PHPUnit_Framework_TestCase
             $this->assertContains('::', $action->getAtrtibute('helper'));
         }
 
-        if (false !== strpos($layoutFile, 'app/code/core/Mage/Adminhtml/view/adminhtml/sales.xml')) {
+        if (false !== strpos($layoutFile, 'app/code/Mage/Adminhtml/view/adminhtml/layout/adminhtml_sales_order')) {
             $this->markTestIncomplete("The file {$layoutFile} has to use Mage_Core_Block_Text_List, \n"
                 . 'there is no solution to get rid of it right now.'
             );

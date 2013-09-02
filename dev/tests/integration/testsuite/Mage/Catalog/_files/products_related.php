@@ -21,11 +21,12 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-$product = new Mage_Catalog_Model_Product();
+/** @var $product Mage_Catalog_Model_Product */
+$product = Mage::getModel('Mage_Catalog_Model_Product');
 $product->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
     ->setId(1)
     ->setAttributeSetId(4)
@@ -38,7 +39,7 @@ $product->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
     ->setStockData(array('qty' => 100, 'is_in_stock' => 1))
     ->save();
 
-$product = new Mage_Catalog_Model_Product();
+$product = Mage::getModel('Mage_Catalog_Model_Product');
 $product->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
     ->setId(2)
     ->setAttributeSetId(4)

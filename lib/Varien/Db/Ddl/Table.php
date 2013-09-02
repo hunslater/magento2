@@ -20,7 +20,7 @@
  *
  * @category    Varien
  * @package     Varien_Db
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -207,6 +207,7 @@ class Varien_Db_Ddl_Table
      * Set comment for table
      *
      * @param string $comment
+     * @return Varien_Db_Ddl_Table
      */
     public function setComment($comment)
     {
@@ -565,7 +566,7 @@ class Varien_Db_Ddl_Table
      *
      * @param string $key
      * @param string $value
-     * @return string
+     * @return Varien_Db_Ddl_Table
      */
     public function setOption($key, $value)
     {

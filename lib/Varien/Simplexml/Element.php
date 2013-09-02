@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Simplexml
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -53,7 +53,7 @@ class Varien_Simplexml_Element extends SimpleXMLElement
      */
     public function setParent($element)
     {
-        #$this->_parent = $element;
+        //$this->_parent = $element;
     }
 
     /**
@@ -61,6 +61,7 @@ class Varien_Simplexml_Element extends SimpleXMLElement
      *
      * Currently using xpath
      *
+     * @throws InvalidArgumentException
      * @return Varien_Simplexml_Element
      */
     public function getParent()
@@ -69,6 +70,9 @@ class Varien_Simplexml_Element extends SimpleXMLElement
             $parent = $this->_parent;
         } else {
             $arr = $this->xpath('..');
+            if (!isset($arr[0])) {
+                throw new InvalidArgumentException('Root node could not be unset.');
+            }
             $parent = $arr[0];
         }
         return $parent;
@@ -95,7 +99,8 @@ class Varien_Simplexml_Element extends SimpleXMLElement
     /**
      * Returns attribute value by attribute name
      *
-     * @return string
+     * @param string $name
+     * @return string|null
      */
     public function getAttribute($name){
         $attrs = $this->attributes();
@@ -278,7 +283,12 @@ class Varien_Simplexml_Element extends SimpleXMLElement
         }
 
         if ($this->hasChildren()) {
-            $out .= '>'.$nl;
+            $out .= '>';
+            $value = trim((string)$this);
+            if (strlen($value)) {
+                $out .= $this->xmlentities($value);
+            }
+            $out .= $nl;
             foreach ($this->children() as $child) {
                 $out .= $child->asNiceXml('', is_numeric($level) ? $level+1 : true);
             }
@@ -495,6 +505,24 @@ class Varien_Simplexml_Element extends SimpleXMLElement
 
         }
         return $this;
+    }
+
+    /**
+     * Unset self from the XML-node tree
+     *
+     * Note: trying to refer this object as a variable after "unsetting" like this will result in E_WARNING
+     */
+    public function unsetSelf()
+    {
+        $uniqueId = uniqid();
+        $this['_unique_id'] = $uniqueId;
+        $children = $this->getParent()->xpath('*');
+        for ($i = count($children); $i > 0; $i--) {
+            if ($children[$i - 1][0]['_unique_id'] == $uniqueId) {
+                unset($children[$i - 1][0]);
+                return;
+            }
+        }
     }
 
 /*

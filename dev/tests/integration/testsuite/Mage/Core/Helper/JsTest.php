@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -36,12 +36,7 @@ class Mage_Core_Helper_JsTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_helper = new Mage_Core_Helper_Js();
-    }
-
-    protected function tearDown()
-    {
-        $this->_helper = null;
+        $this->_helper = Mage::helper('Mage_Core_Helper_Js');
     }
 
     public function testGetTranslateJson()
@@ -52,9 +47,9 @@ class Mage_Core_Helper_JsTest extends PHPUnit_Framework_TestCase
     public function testGetTranslatorScript()
     {
         $this->assertEquals(
-            '<script type="text/javascript">//<![CDATA['
-                . "\nvar Translator = new Translate({$this->_helper->getTranslateJson()});\n"
-                . '//]]></script>',
+            "<script type=\"text/javascript\">//<![CDATA[\n"
+                . '(function($) {$.mage.translate.add(' . $this->_helper->getTranslateJson() . ')})(jQuery);'
+                . "\n//]]></script>",
             $this->_helper->getTranslatorScript()
         );
     }
@@ -68,11 +63,10 @@ class Mage_Core_Helper_JsTest extends PHPUnit_Framework_TestCase
 
     public function testIncludeScript()
     {
-        $this->assertEquals('<script type="text/javascript" src="http://localhost/pub/js/blank.html"></script>' . "\n",
+        $this->assertEquals('<script type="text/javascript" src="http://localhost/pub/lib/blank.html"></script>' . "\n",
             $this->_helper->includeScript(self::FILE)
         );
-        $script = '<script type="text/javascript" '
-            . 'src="http://localhost/pub/media/skin/frontend/%s/%s/%s/%s/images/spacer.gif"></script>';
+        $script = '<script type="text/javascript" src="http://localhost/pub/lib/images/spacer.gif"></script>';
         $this->assertStringMatchesFormat($script, $this->_helper->includeScript('images/spacer.gif'));
     }
 }

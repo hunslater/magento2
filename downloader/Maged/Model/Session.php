@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_Connect
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -48,8 +48,6 @@ class Maged_Model_Session extends Maged_Model
     public function start()
     {
         if (class_exists('Mage') && Mage::isInstalled()) {
-            // initialize Magento Config
-            Mage::app();
             $this->_session = Mage::getSingleton('Mage_Backend_Model_Auth_Session');
         } else {
             session_start();
@@ -138,7 +136,7 @@ class Maged_Model_Session extends Maged_Model
             $this->addMessage('error', 'Invalid user name or password');
             $this->controller()->setAction('login');
         } elseif ($this->getUserId() || ($user && $user->getId())) {
-            if ($this->_session->isAllowed('all')) {
+            if (Mage::getSingleton('Magento_AuthorizationInterface')->isAllowed('Mage_Adminhtml::all')) {
                 return true;
             } else {
                 $this->logout();

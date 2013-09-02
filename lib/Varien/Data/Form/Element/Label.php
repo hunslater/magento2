@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -51,9 +51,9 @@ class Varien_Data_Form_Element_Label extends Varien_Data_Form_Element_Abstract
      */
     public function getElementHtml()
     {
-        $html = $this->getBold() ? '<strong>' : '';
+        $html = $this->getBold() ? '<div class="control-value special">' : '<div class="control-value">';
         $html.= $this->getEscapedValue();
-        $html.= $this->getBold() ? '</strong>' : '';
+        $html.= $this->getBold() ? '</div>' : '</div>';
         $html.= $this->getAfterElementHtml();
         return $html;
     }

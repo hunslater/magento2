@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Bundle
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -45,7 +45,7 @@ class Mage_Bundle_Block_Adminhtml_Catalog_Product_Edit_Tab_Bundle_OptionTest
             ->will($this->returnValue($itemsBlock));
 
         $block = $this->getMock('Mage_Bundle_Block_Adminhtml_Catalog_Product_Edit_Tab_Bundle_Option',
-            array('getLayout'));
+            array('getLayout'), array(), '', false);
         $block->expects($this->atLeastOnce())
             ->method('getLayout')
             ->will($this->returnValue($layout));

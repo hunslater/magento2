@@ -21,33 +21,45 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 class Mage_Catalog_Model_AbstractTest extends PHPUnit_Framework_TestCase
 {
     /**
+     * Stub class name for class under test
+     */
+    const STUB_CLASS = 'Mage_Catalog_Model_Abstract_Stub';
+
+    /**
      * @var Mage_Catalog_Model_Abstract
      */
     protected $_model;
 
+    /**
+     * Flag is stub class was created
+     *
+     * @var bool
+     */
+    protected static $_isStubClass = false;
+
     protected function setUp()
     {
-        $this->_model = $this->getMockForAbstractClass('Mage_Catalog_Model_Abstract');
+        if (!self::$_isStubClass) {
+            $this->getMockForAbstractClass('Mage_Catalog_Model_Abstract', array(), self::STUB_CLASS, false);
+            self::$_isStubClass = true;
+        }
+
+        $this->_model = Mage::getModel(self::STUB_CLASS);
 
         $resourceProperty = new ReflectionProperty(get_class($this->_model), '_resourceName');
         $resourceProperty->setAccessible(true);
         $resourceProperty->setValue($this->_model, 'Mage_Catalog_Model_Resource_Product');
 
-        $collectionProperty = new ReflectionProperty(get_class($this->_model), '_resourceCollectionName');
+        $collectionProperty = new ReflectionProperty(get_class($this->_model), '_collectionName');
         $collectionProperty->setAccessible(true);
         $collectionProperty->setValue($this->_model, 'Mage_Catalog_Model_Resource_Product_Collection');
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     /**

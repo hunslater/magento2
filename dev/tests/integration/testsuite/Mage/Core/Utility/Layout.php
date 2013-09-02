@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -44,18 +44,22 @@ class Mage_Core_Utility_Layout
      * Retrieve new layout update model instance with XML data from a fixture file
      *
      * @param string $layoutUpdatesFile
-     * @return Mage_Core_Model_Layout_Update|PHPUnit_Framework_MockObject_MockObject
+     * @return Mage_Core_Model_Layout_Merge
      */
     public function getLayoutUpdateFromFixture($layoutUpdatesFile)
     {
-        $layoutUpdate = $this->_testCase->getMock(
-            'Mage_Core_Model_Layout_Update', array('getFileLayoutUpdatesXml')
+        $objectManager = Mage::getObjectManager();
+        /** @var Mage_Core_Model_Layout_File_Factory $fileFactory */
+        $fileFactory = $objectManager->get('Mage_Core_Model_Layout_File_Factory');
+        $file = $fileFactory->create($layoutUpdatesFile, 'Mage_Core');
+        $fileSource = $this->_testCase->getMockForAbstractClass('Mage_Core_Model_Layout_File_SourceInterface');
+        $fileSource->expects(PHPUnit_Framework_TestCase::any())
+            ->method('getFiles')
+            ->will(PHPUnit_Framework_TestCase::returnValue(array($file)));
+        $cache = $this->_testCase->getMockForAbstractClass('Magento_Cache_FrontendInterface');
+        return $objectManager->create(
+            'Mage_Core_Model_Layout_Merge', array('fileSource' => $fileSource, 'cache' => $cache)
         );
-        $layoutUpdatesXml = simplexml_load_file($layoutUpdatesFile, $layoutUpdate->getElementClass());
-        $layoutUpdate->expects(PHPUnit_Framework_TestCase::any())
-            ->method('getFileLayoutUpdatesXml')
-            ->will(PHPUnit_Framework_TestCase::returnValue($layoutUpdatesXml));
-        return $layoutUpdate;
     }
 
     /**
@@ -74,5 +78,27 @@ class Mage_Core_Utility_Layout
             ->method('getUpdate')
             ->will(PHPUnit_Framework_TestCase::returnValue($layoutUpdate));
         return $layout;
+    }
+
+    /**
+     * Retrieve object that will be used for layout instantiation
+     *
+     * @return array
+     */
+    public function getLayoutDependencies()
+    {
+        return array(
+            'design'             => Mage::getObjectManager()->get('Mage_Core_Model_View_DesignInterface'),
+            'blockFactory'       => Mage::getObjectManager()->create('Mage_Core_Model_BlockFactory', array()),
+            'structure'          => Mage::getObjectManager()->create('Magento_Data_Structure', array()),
+            'argumentProcessor'  => Mage::getObjectManager()->create('Mage_Core_Model_Layout_Argument_Processor',
+                array()
+            ),
+            'translator'         => Mage::getObjectManager()->create('Mage_Core_Model_Layout_Translator', array()),
+            'scheduledStructure' => Mage::getObjectManager()->create('Mage_Core_Model_Layout_ScheduledStructure',
+                array()
+            ),
+            'dataServiceGraph'   => Mage::getObjectManager()->create('Mage_Core_Model_DataService_Graph', array()),
+        );
     }
 }

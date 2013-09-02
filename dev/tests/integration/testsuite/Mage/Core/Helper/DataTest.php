@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -50,14 +50,9 @@ class Mage_Core_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_helper = new Mage_Core_Helper_Data;
+        $this->_helper = Mage::helper('Mage_Core_Helper_Data');
         $this->_dateTime = new DateTime;
         $this->_dateTime->setTimezone(new DateTimeZone(self::DATE_TIMEZONE));
-    }
-
-    protected function tearDown()
-    {
-        $this->_helper = null;
     }
 
     public function testGetEncryptor()
@@ -144,12 +139,6 @@ class Mage_Core_Helper_DataTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(is_numeric($this->_helper->getStoreId()));
     }
 
-    public function testRemoveAccents()
-    {
-        $noReplacementsNeeded = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $this->assertEquals($noReplacementsNeeded, $this->_helper->removeAccents($noReplacementsNeeded));
-    }
-
     /**
      * @magentoAppIsolation enabled
      */
@@ -176,12 +165,6 @@ class Mage_Core_Helper_DataTest extends PHPUnit_Framework_TestCase
     {
         $_SERVER['REMOTE_ADDR'] = '192.168.0.3';
         $this->assertFalse($this->_helper->isDevAllowed());
-    }
-
-    public function testGetCacheTypes()
-    {
-        $this->assertTrue(is_array($this->_helper->getCacheTypes()));
-        $this->assertTrue(is_array($this->_helper->getCacheBetaTypes()));
     }
 
     public function testCopyFieldset()

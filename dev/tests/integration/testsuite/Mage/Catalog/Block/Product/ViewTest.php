@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -42,27 +42,20 @@ class Mage_Catalog_Block_Product_ViewTest extends PHPUnit_Framework_TestCase
      */
     protected $_product;
 
-
     protected function setUp()
     {
-        $this->_block = new Mage_Catalog_Block_Product_View;
-        $this->_product = new Mage_Catalog_Model_Product();
+        $this->_block = Mage::getObjectManager()->create('Mage_Catalog_Block_Product_View');
+        $this->_product = Mage::getModel('Mage_Catalog_Model_Product');
         $this->_product->load(1);
         Mage::unregister('product');
         Mage::register('product', $this->_product);
     }
 
-    protected function tearDown()
-    {
-        $this->_block = null;
-        $this->_product = null;
-    }
-
     public function testSetLayout()
     {
-        $layout = new Mage_Core_Model_Layout();
-        $headBlock = new Mage_Core_Block_Template();
-        $layout->addBlock($headBlock, 'head');
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
+        $headBlock = $layout->createBlock('Mage_Core_Block_Template', 'head');
         $layout->addBlock($this->_block);
 
         $this->assertNotEmpty($headBlock->getTitle());

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -32,30 +32,20 @@ class Mage_Core_Utility_LayoutTest extends PHPUnit_Framework_TestCase
      */
     protected $_utility;
 
-    public static function setUpBeforeClass()
-    {
-        Mage::app()->getCacheInstance()->banUse('layout');
-    }
-
     protected function setUp()
     {
         $this->_utility = new Mage_Core_Utility_Layout($this);
     }
 
-    protected function tearDown()
-    {
-        $this->_utility = null;
-    }
-
     /**
      * Assert that the actual layout update instance represents the expected layout update file
      *
-     * @param Mage_Core_Model_Layout_Update $actualUpdate
+     * @param Mage_Core_Model_Layout_Merge $actualUpdate
      * @param string $expectedUpdateFile
      */
     protected function _assertLayoutUpdate($actualUpdate, $expectedUpdateFile)
     {
-        $this->assertInstanceOf('Mage_Core_Model_Layout_Update', $actualUpdate);
+        $this->assertInstanceOf('Mage_Core_Model_Layout_Merge', $actualUpdate);
 
         $layoutUpdateXml = $actualUpdate->getFileLayoutUpdatesXml();
         $this->assertInstanceOf('Mage_Core_Model_Layout_Element', $layoutUpdateXml);
@@ -72,7 +62,7 @@ class Mage_Core_Utility_LayoutTest extends PHPUnit_Framework_TestCase
     public function testGetLayoutFromFixture()
     {
         $layoutUpdateFile = __DIR__ . '/_files/_layout_update.xml';
-        $layout = $this->_utility->getLayoutFromFixture($layoutUpdateFile);
+        $layout = $this->_utility->getLayoutFromFixture($layoutUpdateFile, $this->_utility->getLayoutDependencies());
         $this->assertInstanceOf('Mage_Core_Model_Layout', $layout);
         $this->_assertLayoutUpdate($layout->getUpdate(), $layoutUpdateFile);
     }

@@ -20,12 +20,12 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * Form field renderer
+ * Form field renderer interface
  *
  * @category   Varien
  * @package    Varien_Data
@@ -33,5 +33,11 @@
  */
 interface Varien_Data_Form_Element_Renderer_Interface
 {
+    /**
+     * Render form element as HTML
+     *
+     * @param Varien_Data_Form_Element_Abstract $element
+     * @return string
+     */
     public function render(Varien_Data_Form_Element_Abstract $element);
 }

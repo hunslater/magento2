@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Pear
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -32,9 +32,9 @@
  * @author      Magento Core Team <core@magentocommerce.com>
  */
 
-class Varien_Pear_Registry extends PEAR_Registry
+class Varien_Pear_Registry //extends PEAR_Registry
 {
-    function _initializeDepDB()
+/*    function _initializeDepDB()
     {
         if (!isset($this->_dependencyDB)) {
             static $initializing = false;
@@ -69,5 +69,5 @@ class Varien_Pear_Registry extends PEAR_Registry
                 $initializing = false;
             }
         }
-    }
+    }*/
 }

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -64,7 +64,7 @@ class Mage_Catalog_Helper_ImageTest extends PHPUnit_Framework_TestCase
         );
 
         // sample product with images
-        self::$_product = new Mage_Catalog_Model_Product;
+        self::$_product = Mage::getModel('Mage_Catalog_Model_Product');
         self::$_product
             ->addData(array(
                 'image'       => '/m/a/magento_image.jpg',
@@ -74,7 +74,7 @@ class Mage_Catalog_Helper_ImageTest extends PHPUnit_Framework_TestCase
         ;
 
         // sample image cached URL
-        $helper = new Mage_Catalog_Helper_Image;
+        $helper = Mage::helper('Mage_Catalog_Helper_Image');
         self::$_sampleCachedUrl = (string)$helper->init(self::$_product, 'image');
     }
 
@@ -92,12 +92,7 @@ class Mage_Catalog_Helper_ImageTest extends PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->_helper = new Mage_Catalog_Helper_Image;
-    }
-
-    protected function tearDown()
-    {
-        $this->_helper = null;
+        $this->_helper = Mage::helper('Mage_Catalog_Helper_Image');
     }
 
     /**
@@ -177,6 +172,8 @@ class Mage_Catalog_Helper_ImageTest extends PHPUnit_Framework_TestCase
     /**
      * placeholder()
      * getPlaceholder()
+     *
+     * @magentoAppIsolation enabled
      */
     public function testPlaceholder()
     {
@@ -191,9 +188,13 @@ class Mage_Catalog_Helper_ImageTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals($placeholder, $defaultPlaceholder);
     }
 
+    /**
+     * @magentoAppIsolation enabled
+     */
     public function testGetPlaceholder()
     {
-        $model = new Mage_Catalog_Model_Product;
+        /** @var $model Mage_Catalog_Model_Product */
+        $model = Mage::getModel('Mage_Catalog_Model_Product');
         $this->_helper->init($model, 'image');
         $placeholder = $this->_helper->getPlaceholder();
         $this->assertEquals('Mage_Catalog::images/product/placeholder/image.jpg', $placeholder);
@@ -213,19 +214,6 @@ class Mage_Catalog_Helper_ImageTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(272, $this->_init()->getOriginalWidth());
         $this->assertEquals(261, $this->_init()->getOriginalHeight());
         $this->assertEquals(array(272, 261), $this->_init()->getOriginalSizeArray());
-    }
-
-    public function testValidateUploadFile()
-    {
-        $this->assertTrue($this->_helper->validateUploadFile(self::$_fixtureMediaDir . '/m/a/magento_thumbnail.jpg'));
-    }
-
-    /**
-     * @expectedException Mage_Core_Exception
-     */
-    public function testValidateUploadFileException()
-    {
-        $this->_helper->validateUploadFile(__FILE__);
     }
 
     /**

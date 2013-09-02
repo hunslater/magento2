@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -40,31 +40,30 @@ class Mage_Catalog_Model_Layer_Filter_DecimalTest extends PHPUnit_Framework_Test
 
     protected function setUp()
     {
-        $category = new Mage_Catalog_Model_Category;
+        $category = Mage::getModel('Mage_Catalog_Model_Category');
         $category->load(4);
 
-        $attribute = new Mage_Catalog_Model_Entity_Attribute();
+        /** @var $attribute Mage_Catalog_Model_Entity_Attribute */
+        $attribute = Mage::getModel('Mage_Catalog_Model_Entity_Attribute');
         $attribute->loadByCode('catalog_product', 'weight');
 
-        $this->_model = new Mage_Catalog_Model_Layer_Filter_Decimal;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Layer_Filter_Decimal');
         $this->_model->setData(array(
-            'layer' => new Mage_Catalog_Model_Layer(array(
-                'current_category' => $category,
+            'layer' => Mage::getModel('Mage_Catalog_Model_Layer', array(
+                'data' => array('current_category' => $category)
             )),
             'attribute_model' => $attribute,
         ));
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testApplyNothing()
     {
         $this->assertEmpty($this->_model->getData('range'));
 
-        $this->_model->apply(new Magento_Test_Request(), new Mage_Core_Block_Text());
+        $this->_model->apply(
+            new Magento_Test_Request(),
+            Mage::app()->getLayout()->createBlock('Mage_Core_Block_Text')
+        );
 
         $this->assertEmpty($this->_model->getData('range'));
     }
@@ -75,7 +74,7 @@ class Mage_Catalog_Model_Layer_Filter_DecimalTest extends PHPUnit_Framework_Test
 
         $request = new Magento_Test_Request();
         $request->setParam('decimal', 'non-decimal');
-        $this->_model->apply($request, new Mage_Core_Block_Text());
+        $this->_model->apply($request, Mage::app()->getLayout()->createBlock('Mage_Core_Block_Text'));
 
         $this->assertEmpty($this->_model->getData('range'));
     }
@@ -84,7 +83,7 @@ class Mage_Catalog_Model_Layer_Filter_DecimalTest extends PHPUnit_Framework_Test
     {
         $request = new Magento_Test_Request();
         $request->setParam('decimal', '1,100');
-        $this->_model->apply($request, new Mage_Core_Block_Text());
+        $this->_model->apply($request, Mage::app()->getLayout()->createBlock('Mage_Core_Block_Text'));
 
         $this->assertEquals(100, $this->_model->getData('range'));
     }

@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -66,7 +66,7 @@ class Varien_Data_Form_Element_Multiline extends Varien_Data_Form_Element_Abstra
             }
             $html .= '<div class="multi-input"><input id="' . $this->getHtmlId() . $i . '" name="' . $this->getName()
                 . '[' . $i . ']' . '" value="' . $this->getEscapedValue($i) . '" '
-                . $this->serialize($this->getHtmlAttributes()) . ' />' . "\n";
+                . $this->serialize($this->getHtmlAttributes()) . '  ' . $this->_getUiId($i) . '/>' . "\n";
             if ($i==0) {
                 $html .= $this->getAfterElementHtml();
             }

@@ -21,7 +21,7 @@
  * @category    Mage
  * @package     Mage_Wishlist
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,13 +29,13 @@ class Mage_Wishlist_Block_Customer_Wishlist_ItemsTest extends PHPUnit_Framework_
 {
     public function testGetColumns()
     {
-        $layout = new Mage_Core_Model_Layout;
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
         $block = $layout->addBlock('Mage_Wishlist_Block_Customer_Wishlist_Items', 'test');
-        $child = $this->getMock('Mage_Core_Block_Text', array('isEnabled'));
+        $child = $this->getMock('Mage_Core_Block_Text', array('isEnabled'),
+            array(Mage::getSingleton('Mage_Core_Block_Context')));
         $child->expects($this->any())
             ->method('isEnabled')
-            ->will($this->returnValue(true))
-        ;
+            ->will($this->returnValue(true));
         $layout->addBlock($child, 'child', 'test');
         $this->assertSame(array($child), $block->getColumns());
     }

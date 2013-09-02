@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Core_Model_Url;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Core_Model_Url');
     }
 
     public function testParseUrl()
@@ -108,20 +103,20 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
     /**
      * @magentoAppIsolation enabled
      */
-    public function testGetSecure()
+    public function testIsSecure()
     {
-        $this->assertFalse($this->_model->getSecure());
+        $this->assertFalse($this->_model->isSecure());
         $this->_model->setSecureIsForced(1);
-        $this->assertTrue(is_bool($this->_model->getSecure()));
-        Mage::app()->getStore()->setId(Mage_Core_Model_App::ADMIN_STORE_ID);
-        $this->assertFalse($this->_model->getSecure());
+        $this->assertTrue(is_bool($this->_model->isSecure()));
+        Mage::app()->getStore()->setId(Mage_Core_Model_AppInterface::ADMIN_STORE_ID);
+        $this->assertFalse($this->_model->isSecure());
     }
 
     public function testSetGetStore()
     {
         $this->assertInstanceOf('Mage_Core_Model_Store', $this->_model->getStore());
 
-        $store = new Mage_Core_Model_Store;
+        $store = Mage::getModel('Mage_Core_Model_Store');
         $this->_model->setStore($store);
         $this->assertSame($store, $this->_model->getStore());
     }
@@ -148,20 +143,65 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
     /**
      * Note: isolation flushes the URL memory cache
      * @magentoAppIsolation enabled
+     *
+     * @dataProvider getBaseUrlConfiguredDataProvider
+     *
      * @magentoConfigFixture current_store web/secure/base_url        http://sample.com/base_path/
+     * @magentoConfigFixture current_store web/unsecure/base_link_url http://sample.com/base_link_path/
      * @magentoConfigFixture current_store web/secure/base_link_url   https://sample.com/base_link_path/
      * @magentoConfigFixture current_store web/secure/use_in_frontend 1
+     *
+     * @param array $params
+     * @param string $expectedUrl
      */
-    public function testGetBaseUrlConfigured()
+    public function testGetBaseUrlConfigured($params, $expectedUrl)
     {
-        $actualUrl = $this->_model->getBaseUrl(array('_type' => Mage_Core_Model_Store::URL_TYPE_WEB));
-        $this->assertEquals('http://sample.com/base_path/', $actualUrl);
+        $actualUrl = $this->_model->getBaseUrl($params);
+        $this->assertEquals($expectedUrl, $actualUrl);
+    }
 
-        $actualUrl = $this->_model->getBaseUrl(array('_type' => Mage_Core_Model_Store::URL_TYPE_LINK));
-        $this->assertEquals('https://sample.com/base_link_path/index.php/', $actualUrl);
+    /**
+     * Check that url type is restored to default after call getBaseUrl with type specified in params
+     */
+    public function testGetBaseUrlWithTypeRestoring()
+    {
+        /**
+         * Get base ull with default type
+         */
+        $this->assertEquals('http://localhost/index.php/', $this->_model->getBaseUrl(), 'Incorrect link url');
 
-        $actualUrl = $this->_model->getBaseUrl(array('_type' => Mage_Core_Model_Store::URL_TYPE_LINK, '_secure' => 1));
-        $this->assertEquals('https://sample.com/base_link_path/index.php/', $actualUrl);
+        /**
+         * Set specified type
+         */
+        $this->_model->setType(Mage_Core_Model_Store::URL_TYPE_WEB);
+        $webUrl = $this->_model->getBaseUrl();
+        $this->assertEquals('http://localhost/', $webUrl, 'Incorrect web url');
+        $this->assertEquals('http://localhost/index.php/', $this->_model->getBaseUrl(), 'Incorrect link url');
+
+        /**
+         * Get url with type specified in params
+         */
+        $mediaUrl = $this->_model->getBaseUrl(array('_type' => Mage_Core_Model_Store::URL_TYPE_MEDIA));
+        $this->assertEquals('http://localhost/pub/media/', $mediaUrl, 'Incorrect media url');
+        $this->assertEquals('http://localhost/index.php/', $this->_model->getBaseUrl(), 'Incorrect link url');
+    }
+
+    public function getBaseUrlConfiguredDataProvider()
+    {
+        return array(
+            array(
+                array('_type' => Mage_Core_Model_Store::URL_TYPE_WEB),
+                'http://sample.com/base_path/'
+            ),
+            array(
+                array('_type' => Mage_Core_Model_Store::URL_TYPE_LINK),
+                'http://sample.com/base_link_path/index.php/'
+            ),
+            array(
+                array('_type' => Mage_Core_Model_Store::URL_TYPE_LINK, '_secure' => 1),
+                'https://sample.com/base_link_path/index.php/'
+            ),
+        );
     }
 
     public function testSetRoutePath()
@@ -203,6 +243,14 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
 
         $this->_model->setRoutePath('catalog/product/view/id/50');
         $this->assertEquals('catalog/product/view/id/50/', $this->_model->getRoutePath());
+
+        $this->_model->setRoutePath('catalog/product/view');
+        $this->_model->setRouteParams(array('id' => 50));
+        $this->assertEquals('catalog/product/view/id/50/', $this->_model->getRoutePath());
+
+        $this->_model->setRoutePath('adminhtml/system_config/edit');
+        $this->_model->setRouteParams(array('section' => 'design', 'key' => '123'));
+        $this->assertEquals('admin/system_config/edit/section/design/key/123/', $this->_model->getRoutePath());
     }
 
     public function testSetGetRouteName()
@@ -325,6 +373,205 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('http://localhost/index.php/catalog/product/view/id/100/?foo=bar#anchor', $result);
     }
 
+    /**
+     * Note: isolation flushes the URL memory cache
+     * @magentoAppIsolation enabled
+     */
+    public function testGetUrlDoesntAddQueryParamsOnConsequentCalls()
+    {
+        $result = $this->_model->getUrl('catalog/product/view', array(
+            '_query' => 'foo=bar',
+            '_nosid' => 1,
+        ));
+        $this->assertEquals('http://localhost/index.php/catalog/product/view/?foo=bar', $result);
+        $result = $this->_model->getUrl('catalog/product/view', array(
+            '_nosid' => 1,
+        ));
+        $this->assertEquals('http://localhost/index.php/catalog/product/view/', $result);
+    }
+
+    /**
+     * Note: isolation flushes the URL memory cache
+     * @magentoAppIsolation enabled
+     * @covers Mage_Core_Model_Url::getUrl
+     */
+    public function testGetUrlDoesntAddFragmentOnConsequentCalls()
+    {
+        $result = $this->_model->getUrl('catalog/product/view', array(
+            '_nosid' => 1,
+            '_fragment' => 'section'
+        ));
+        $this->assertEquals('http://localhost/index.php/catalog/product/view/#section', $result);
+        $result = $this->_model->getUrl('catalog/product/view', array(
+            '_nosid' => 1,
+        ));
+        $this->assertEquals('http://localhost/index.php/catalog/product/view/', $result);
+    }
+
+    /**
+     * Note: isolation flushes the URL memory cache
+     * @magentoAppIsolation enabled
+     *
+     * @dataProvider consequentCallsDataProvider
+     *
+     * @param string $firstCallUrl
+     * @param string $secondCallUrl
+     * @param array $firstRouteParams
+     * @param array $secondRouteParams
+     * @param string $firstExpectedUrl
+     * @param string $secondExpectedUrl
+     * @covers Mage_Core_Model_Url::getUrl
+     */
+    public function testGetUrlOnConsequentCalls($firstCallUrl, $secondCallUrl, $firstRouteParams, $secondRouteParams,
+        $firstExpectedUrl, $secondExpectedUrl
+    ) {
+        $result = $this->_model->getUrl($firstCallUrl, $firstRouteParams);
+        $this->assertEquals($firstExpectedUrl, $result);
+
+        $result = $this->_model->getUrl($secondCallUrl, $secondRouteParams);
+        $this->assertEquals($secondExpectedUrl, $result);
+    }
+
+    /**
+     * Data provider for testGetUrlOnConsequentCalls()
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @return array
+     */
+    public function consequentCallsDataProvider()
+    {
+        return array(
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1/p_1/v_1',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/'
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1/p_1/v_2',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1/p_1',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/a_1/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1/p_2/v_2',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/a_1/p_2/v_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/a_1/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_2',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/a_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_1/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_2',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/c_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_1/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_2',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/r_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                null,
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+                'http://localhost/index.php/',
+            ),
+            array(
+                'r_1/c_1/a_1',
+                'r_1/c_1/a_1/p_1/v_1',
+                null,
+                null,
+                'http://localhost/index.php/r_1/c_1/a_1/',
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/',
+            ),
+            array(
+                null,
+                'r_1/c_1/a_1',
+                null,
+                null,
+                'http://localhost/index.php/',
+                'http://localhost/index.php/r_1/c_1/a_1/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1/p_1/v_1',
+                array('p_2' => 'v_2'),
+                array('p_2' => 'v_2'),
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/p_2/v_2/',
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/p_2/v_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                'r_1/c_1/a_1',
+                array('p_2' => 'v_2'),
+                array('p_2' => 'v_2'),
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/p_2/v_2/',
+                'http://localhost/index.php/r_1/c_1/a_1/p_2/v_2/',
+            ),
+            array(
+                'r_1/c_1/a_1/p_1/v_1',
+                null,
+                array('p_2' => 'v_2'),
+                array('p_1' => 'v_1', 'p_2' => 'v_2'),
+                'http://localhost/index.php/r_1/c_1/a_1/p_1/v_1/p_2/v_2/',
+                'http://localhost/index.php/p_1/v_1/p_2/v_2/',
+            ),
+        );
+    }
+
     public function testEscape()
     {
         $this->assertEquals('%22%27%3E%3C', $this->_model->escape('"\'><'));
@@ -336,9 +583,8 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
      */
     public function testGetDirectUrl()
     {
-        $this->assertEquals('http://localhost/index.php/fancy_uri?foo=bar',
-            $this->_model->getDirectUrl('fancy_uri', array('_query' => array('foo' => 'bar')))
-        );
+        $directUrl = $this->_model->getDirectUrl('fancy_uri', array('_query' => array('foo' => 'bar')));
+        $this->assertEquals('http://localhost/index.php/fancy_uri?foo=bar', $directUrl);
     }
 
     /**
@@ -351,8 +597,9 @@ class Mage_Core_Model_UrlTest extends PHPUnit_Framework_TestCase
     public function testSessionUrlVar()
     {
         $sessionId = Mage::getSingleton('Mage_Core_Model_Session')->getEncryptedSessionId();
+        $sessionUrl = $this->_model->sessionUrlVar('<a href="http://example.com/?___SID=U">www.example.com</a>');
         $this->assertEquals('<a href="http://example.com/?SID=' . $sessionId . '">www.example.com</a>',
-            $this->_model->sessionUrlVar('<a href="http://example.com/?___SID=U">www.example.com</a>')
+            $sessionUrl
         );
     }
 

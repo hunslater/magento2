@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,24 +34,17 @@ class Mage_Core_Model_Email_Template_FilterTest extends PHPUnit_Framework_TestCa
 
     protected function setUp()
     {
-        $this->_model = new Mage_Core_Model_Email_Template_Filter;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Core_Model_Email_Template_Filter');
     }
 
     /**
      * Isolation level has been raised in order to flush themes configuration in-memory cache
-     *
-     * @magentoAppIsolation enabled
      */
-    public function testSkinDirective()
+    public function testViewDirective()
     {
-        $url = $this->_model->skinDirective(array(
-            '{{skin url="Mage_Page::favicon.ico"}}',
-            'skin',
+        $url = $this->_model->viewDirective(array(
+            '{{view url="Mage_Page::favicon.ico"}}',
+            'view',
             ' url="Mage_Page::favicon.ico"', // note leading space
         ));
         $this->assertStringEndsWith('favicon.ico', $url);
@@ -102,18 +95,34 @@ class Mage_Core_Model_Email_Template_FilterTest extends PHPUnit_Framework_TestCa
     }
 
     /**
+     * @magentoDataFixture Mage/Core/Model/Email/_files/themes.php
+     * @magentoConfigFixture adminhtml/design/theme/full_name test/default
      * @magentoAppIsolation enabled
      * @dataProvider layoutDirectiveDataProvider
      *
-     * @param string $currentArea
+     * @param string $area
      * @param string $directiveParams
      * @param string $expectedOutput
      */
-    public function testLayoutDirective($currentArea, $directiveParams, $expectedOutput)
+    public function testLayoutDirective($area, $directiveParams, $expectedOutput)
     {
-        $this->_emulateCurrentArea($currentArea);
-        Mage::getConfig()->setOptions(array('design_dir' => dirname(__DIR__) . '/_files/design'));
-        Mage::getDesign()->setDesignTheme('test/default/default');
+        Magento_Test_Helper_Bootstrap::getInstance()->reinitialize(array(
+            Mage::PARAM_APP_DIRS => array(
+                Mage_Core_Model_Dir::THEMES => dirname(__DIR__) . '/_files/design'
+            )
+        ));
+
+        $collection = Mage::getModel('Mage_Core_Model_Resource_Theme_Collection');
+        $themeId = $collection->getThemeByFullPath('frontend/test/default')->getId();
+        Mage::app()->getStore()->setConfig(Mage_Core_Model_View_Design::XML_PATH_THEME_ID, $themeId);
+
+        $objectManager = Mage::getObjectManager();
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = $objectManager->create('Mage_Core_Model_Layout', array('area' => $area));
+        $objectManager->addSharedInstance($layout, 'Mage_Core_Model_Layout');
+        $this->assertEquals($area, $layout->getArea());
+        $this->assertEquals($area, Mage::app()->getLayout()->getArea());
+        Mage::getDesign()->setDesignTheme('test/default');
 
         $actualOutput = $this->_model->layoutDirective(array(
             '{{layout ' . $directiveParams . '}}',
@@ -123,6 +132,9 @@ class Mage_Core_Model_Email_Template_FilterTest extends PHPUnit_Framework_TestCa
         $this->assertEquals($expectedOutput, trim($actualOutput));
     }
 
+    /**
+     * @return array
+     */
     public function layoutDirectiveDataProvider()
     {
         $result = array(
@@ -149,19 +161,5 @@ class Mage_Core_Model_Email_Template_FilterTest extends PHPUnit_Framework_TestCa
             ),
         );
         return $result;
-    }
-
-    /**
-     * Emulate the current application area
-     *
-     * @param string $area
-     */
-    protected function _emulateCurrentArea($area)
-    {
-        /** @var $layout Mage_Core_Model_Layout */
-        $layout = Mage::getSingleton('Mage_Core_Model_Layout', array('area' => $area));
-        $this->assertEquals($area, $layout->getArea());
-        $this->assertEquals($area, Mage::app()->getLayout()->getArea());
-        Mage::getDesign()->setArea($area);
     }
 }

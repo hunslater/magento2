@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,14 +33,103 @@ class MageTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @param int|null $level
+     * @param string $file
+     * @param bool $forceLog
+     * @param int $expectedLevel
+     * @param string $expectedKey
+     * @param bool $expectsAddLog
+     * @dataProvider logDataProvider
+     * @throws Exception
+     */
+    public function testLog($level, $file, $forceLog, $expectedLevel, $expectedKey, $expectsAddLog)
+    {
+        $message = uniqid();
+        /** @var $logger Mage_Core_Model_Logger|PHPUnit_Framework_MockObject_MockObject */
+        $logger = $this->getMock('Mage_Core_Model_Logger', array('log', 'addStreamLog'), array(), '', false);
+        $realLogger = Mage::getObjectManager()->get('Mage_Core_Model_Logger');
+        Mage::getObjectManager()->addSharedInstance($logger, 'Mage_Core_Model_Logger');
+        try {
+            $logger->expects($this->once())->method('log')->with($message, $expectedLevel, $expectedKey);
+            if ($expectsAddLog) {
+                $logger->expects($this->once())->method('addStreamLog');
+            }
+            Mage::log($message, $level, $file, $forceLog);
+            Mage::getObjectManager()->addSharedInstance($realLogger, 'Mage_Core_Model_Logger');
+        } catch (Exception $e) {
+            Mage::getObjectManager()->addSharedInstance($realLogger, 'Mage_Core_Model_Logger');
+            throw $e;
+        }
+
+    }
+
+    /**
+     * @return array
+     */
+    public function logDataProvider()
+    {
+        return array(
+            array(null, '', false, Zend_Log::DEBUG, Mage_Core_Model_Logger::LOGGER_SYSTEM, false),
+            array(Zend_Log::CRIT, 'system.log', true, Zend_Log::CRIT, Mage_Core_Model_Logger::LOGGER_SYSTEM, false),
+            array(null, 'exception.log', false, Zend_Log::DEBUG, Mage_Core_Model_Logger::LOGGER_EXCEPTION, false),
+            array(null, 'custom.log', false, Zend_Log::DEBUG, 'custom.log', true, false),
+            array(null, 'exception.log', true, Zend_Log::DEBUG, Mage_Core_Model_Logger::LOGGER_EXCEPTION, true),
+        );
+    }
+
+    /**
+     * @magentoConfigFixture current_store dev/log/active 1
+     * @magentoConfigFixture current_store dev/log/file php://output
+     * @link http://us3.php.net/manual/en/wrappers.php
+     */
+    public function testLogWrapper()
+    {
+        // @magentoConfigFixture is applied after initialization, so we need to do this again
+        Magento_Test_Helper_Bootstrap::getInstance()->reinitialize();
+        $this->expectOutputRegex('/test/');
+        Mage::app()->getStore(true);
+        Mage::log('test');
+    }
+
+    /**
      * @magentoAppIsolation enabled
      */
-    public function testReset()
+    public function testLogWrapperDirectly()
     {
-        Mage::setRoot(dirname(__FILE__));
-        $this->assertNotNull(Mage::getRoot());
-        Mage::reset();
-        $this->assertNull(Mage::getRoot());
+        $this->expectOutputRegex('/test/');
+        Mage::log('test', null, 'php://output');
+    }
+
+    /**
+     * @magentoConfigFixture current_store dev/log/active 1
+     * @magentoConfigFixture global/log/core/writer_model Zend_Log_Writer_Mail
+     * @magentoAppIsolation enabled
+     */
+    public function testLogUnsupportedWrapper()
+    {
+        // initialize again, because config fixture is applied after initialization
+        Magento_Test_Helper_Bootstrap::getInstance()->reinitialize();
+        $logEntry = microtime();
+        Mage::log($logEntry);
+        $logFile = Mage::getBaseDir('log') . '/system.log';
+        $this->assertFileExists($logFile);
+        $this->assertContains($logEntry, file_get_contents($logFile));
+    }
+
+    /**
+     * @magentoConfigFixture current_store dev/log/active 1
+     * @magentoConfigFixture current_store dev/log/exception_file php://output
+     * @magentoAppIsolation enabled
+     */
+    public function testLogException()
+    {
+        // reinitialization is needed here, too
+        Magento_Test_Helper_Bootstrap::getInstance()->reinitialize();
+        Mage::app()->getStore(true);
+        $msg = uniqid();
+        $exception = new Exception((string)$msg);
+        Mage::logException($exception);
+        $this->expectOutputRegex('/' . $msg . '/');
     }
 
     /**

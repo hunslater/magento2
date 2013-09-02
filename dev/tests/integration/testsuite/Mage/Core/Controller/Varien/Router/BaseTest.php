@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -35,40 +35,11 @@ class Mage_Core_Controller_Varien_Router_BaseTest extends PHPUnit_Framework_Test
     protected function setUp()
     {
         $options = array(
-            'area' => 'frontend',
-            'base_controller' => 'Mage_Core_Controller_Front_Action'
+            'areaCode' => 'frontend',
+            'baseController' => 'Mage_Core_Controller_Front_Action'
         );
-        $this->_model = new Mage_Core_Controller_Varien_Router_Base($options);
-        $this->_model->setFront(new Mage_Core_Controller_Varien_Front());
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
-    }
-
-    /**
-     * @dataProvider initOptionsDataProvider
-     * @expectedException Mage_Core_Exception
-     */
-    public function testConstructor(array $options)
-    {
-        new Mage_Core_Controller_Varien_Router_Base($options);
-    }
-
-    public function initOptionsDataProvider()
-    {
-        return array(
-            array(
-                array()
-            ),
-            array(
-                array('area' => 'frontend')
-            ),
-            array(
-                array('base_controller' => 'Mage_Core_Controller_Front_Action')
-            )
-        );
+        $this->_model = Mage::getModel('Mage_Core_Controller_Varien_Router_Base', $options);
+        $this->_model->setFront(Mage::getModel('Mage_Core_Controller_Varien_Front'));
     }
 
     public function testCollectRoutes()
@@ -91,7 +62,7 @@ class Mage_Core_Controller_Varien_Router_BaseTest extends PHPUnit_Framework_Test
 
     public function testMatch()
     {
-        if (!Magento_Test_Bootstrap::canTestHeaders()) {
+        if (!Magento_Test_Helper_Bootstrap::canTestHeaders()) {
             $this->markTestSkipped('Can\'t test get match without sending headers');
         }
 

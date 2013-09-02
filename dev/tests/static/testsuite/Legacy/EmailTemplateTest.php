@@ -21,7 +21,7 @@
  * @category    tests
  * @package     static
  * @subpackage  Legacy
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -36,11 +36,10 @@ class Legacy_EmailTemplateTest extends PHPUnit_Framework_TestCase
      */
     public function testObsoleteDirectives($file)
     {
-        $suggestion = sprintf(Legacy_ObsoleteCodeTest::SUGGESTION_MESSAGE, '{{escapehtml}}');
         $this->assertNotRegExp(
             '/\{\{htmlescape.*?\}\}/i',
             file_get_contents($file),
-            'Directive {{htmlescape}} is obsolete. ' . $suggestion
+            'Directive {{htmlescape}} is obsolete. Use {{escapehtml}} instead.'
         );
     }
 

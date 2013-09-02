@@ -21,7 +21,7 @@
  * @category    Mage
  * @package     Mage_Rss
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -57,7 +57,7 @@ class Mage_Rss_IndexControllerTest extends Magento_Test_TestCase_ControllerAbstr
      */
     public function testWishlistAction()
     {
-        $wishlist = new Mage_Wishlist_Model_Wishlist;
+        $wishlist = Mage::getModel('Mage_Wishlist_Model_Wishlist');
         $wishlist->load('fixture_unique_code', 'sharing_code');
         $this->getRequest()->setParam('wishlist_id', $wishlist->getId())
             ->setParam('data', base64_encode('1'))

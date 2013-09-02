@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,12 +39,7 @@ class Mage_Catalog_Model_Product_Attribute_Tierprice_ApiTest extends PHPUnit_Fra
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product_Attribute_Tierprice_Api;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product_Attribute_Tierprice_Api');
     }
 
     public function testInfo()
@@ -72,13 +67,13 @@ class Mage_Catalog_Model_Product_Attribute_Tierprice_ApiTest extends PHPUnit_Fra
      */
     public function testPrepareTierPricesInvalidData()
     {
-        $product = new Mage_Catalog_Model_Product();
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $this->_model->prepareTierPrices($product, array(1));
     }
 
     public function testPrepareTierPricesInvalidWebsite()
     {
-        $product = new Mage_Catalog_Model_Product();
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $data = $this->_model->prepareTierPrices($product, array(array('qty' => 3, 'price' => 8, 'website' => 100)));
         $this->assertEquals(
             array(array('website_id' => 0, 'cust_group' => 32000, 'price_qty' => 3, 'price' => 8)),
@@ -88,7 +83,7 @@ class Mage_Catalog_Model_Product_Attribute_Tierprice_ApiTest extends PHPUnit_Fra
 
     public function testPrepareTierPrices()
     {
-        $product = new Mage_Catalog_Model_Product();
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
 
         $this->assertNull($this->_model->prepareTierPrices($product));
 

@@ -21,22 +21,22 @@
  * @category    Magento
  * @package     Mage_Paypal
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 $addressData = include(__DIR__ . '/address_data.php');
-$billingAddress = new Mage_Sales_Model_Order_Address($addressData);
+$billingAddress = Mage::getModel('Mage_Sales_Model_Order_Address', array('data' => $addressData));
 $billingAddress->setAddressType('billing');
 
 $shippingAddress = clone $billingAddress;
 $shippingAddress->setId(null)
     ->setAddressType('shipping');
 
-$payment = new Mage_Sales_Model_Order_Payment();
+$payment = Mage::getModel('Mage_Sales_Model_Order_Payment');
 $payment->setMethod(Mage_Paypal_Model_Config::METHOD_WPS);
 
-$order = new Mage_Sales_Model_Order();
+$order = Mage::getModel('Mage_Sales_Model_Order');
 $order->setIncrementId('100000001')
     ->setSubtotal(100)
     ->setBaseSubtotal(100)

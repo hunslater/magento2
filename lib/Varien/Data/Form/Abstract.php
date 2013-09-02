@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -57,10 +57,21 @@ class Varien_Data_Form_Abstract extends Varien_Object
     public function __construct($attributes = array())
     {
         parent::__construct($attributes);
+        $this->_construct();
     }
 
     /**
-     * Enter description here...
+     * Internal constructor, that is called from real constructor
+     *
+     * Please override this one instead of overriding real __construct constructor
+     *
+     */
+    protected function _construct()
+    {
+    }
+
+    /**
+     * Add element type
      *
      * @param string $type
      * @param string $className
@@ -73,7 +84,7 @@ class Varien_Data_Form_Abstract extends Varien_Object
     }
 
     /**
-     * Enter description here...
+     * Get elements collection
      *
      * @return Varien_Data_Form_Element_Collection
      */
@@ -139,9 +150,8 @@ class Varien_Data_Form_Abstract extends Varien_Object
     {
         if (isset($this->_types[$type])) {
             $className = $this->_types[$type];
-        }
-        else {
-            $className = 'Varien_Data_Form_Element_'.ucfirst(strtolower($type));
+        } else {
+            $className = 'Varien_Data_Form_Element_' . ucfirst(strtolower($type));
         }
         $element = new $className($config);
         $element->setId($elementId);
@@ -162,24 +172,25 @@ class Varien_Data_Form_Abstract extends Varien_Object
     }
 
     /**
-     * Enter description here...
+     * Add fieldset
      *
      * @param string $elementId
      * @param array $config
      * @param bool|string|null $after
-     *
+     * @param bool $isAdvanced
      * @return Varien_Data_Form_Element_Fieldset
      */
-    public function addFieldset($elementId, $config, $after = false)
+    public function addFieldset($elementId, $config, $after = false, $isAdvanced = false)
     {
         $element = new Varien_Data_Form_Element_Fieldset($config);
         $element->setId($elementId);
+        $element->setAdvanced($isAdvanced);
         $this->addElement($element, $after);
         return $element;
     }
 
     /**
-     * Enter description here...
+     * Add column element
      *
      * @param string $elementId
      * @param array $config
@@ -195,7 +206,7 @@ class Varien_Data_Form_Abstract extends Varien_Object
     }
 
     /**
-     * Enter description here...
+     * Convert elements to array
      *
      * @param array $arrAttributes
      * @return array

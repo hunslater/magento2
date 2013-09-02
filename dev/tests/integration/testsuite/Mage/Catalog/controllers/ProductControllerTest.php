@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -38,7 +38,8 @@ class Mage_Catalog_ProductControllerTest extends Magento_Test_TestCase_Controlle
 
     protected function _getProductImageFile()
     {
-        $product = new Mage_Catalog_Model_Product();
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->load(1);
         $images = $product->getMediaGalleryImages()->getItems();
         $image = reset($images);
@@ -74,8 +75,12 @@ class Mage_Catalog_ProductControllerTest extends Magento_Test_TestCase_Controlle
         $this->assertContains('Add to Cart', $responseBody);
         /* Meta info */
         $this->assertContains('<title>Simple Product 1 Meta Title</title>', $responseBody);
-        $this->assertContains('<meta name="keywords" content="Simple Product 1 Meta Keyword" />', $responseBody);
-        $this->assertContains('<meta name="description" content="Simple Product 1 Meta Description" />', $responseBody);
+        $this->assertSelectCount('meta[name="keywords"][content="Simple Product 1 Meta Keyword"]', 1, $responseBody);
+        $this->assertSelectCount(
+            'meta[name="description"][content="Simple Product 1 Meta Description"]',
+            1,
+            $responseBody
+        );
     }
 
     /**
@@ -85,9 +90,7 @@ class Mage_Catalog_ProductControllerTest extends Magento_Test_TestCase_Controlle
     {
         $this->dispatch('catalog/product/view/id/1');
         $html = $this->getResponse()->getBody();
-        $format = '%Aclass="product-options" id="product-options-wrapper">%A'
-            . '<div class="product-options-bottom">%A<div class="add-to-cart">%A<ul class="add-to-links">%A';
-        $this->assertStringMatchesFormat($format, $html);
+        $this->assertSelectCount('#product-options-wrapper', 1, $html);
     }
 
     public function testViewActionNoProductId()

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -40,37 +40,7 @@ class Mage_Backend_Model_Menu_Item_FactoryTest extends PHPUnit_Framework_TestCas
     /**
      * @var PHPUnit_Framework_MockObject_MockObject
      */
-    protected $_factoryMock;
-
-    /**
-     * @var PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $_urlModelMock;
-
-    /**
-     * @var PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $_aclMock;
-
-    /**
-     * @var PHPUnit_Framework_MockObject_MockObject[]
-     */
-    protected $_helpers = array();
-
-    /**
-     * @var PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $_appConfigMock;
-
-    /**
-     * @var PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $_storeConfigMock;
-
-    /**
-     * @var PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $_itemValidatorMock;
+    protected $_helperFactoryMock;
 
     /**
      * Constructor params
@@ -81,95 +51,48 @@ class Mage_Backend_Model_Menu_Item_FactoryTest extends PHPUnit_Framework_TestCas
 
     public function setUp()
     {
-        $this->_aclMock = $this->getMock('Mage_Backend_Model_Auth_Session', array(), array(), '', false);
-        $this->_objectFactoryMock = $this->getMock('Mage_Core_Model_Config', array(), array(), '', false);
-        $this->_factoryMock = $this->getMock('Mage_Backend_Model_Menu_Factory');
-        $this->_helpers = array(
-            'Mage_Backend_Helper_Data' => $this->getMock('Mage_Backend_Helper_Data', array(), array(), '', false),
-            'Mage_User_Helper_Data' => $this->getMock('Mage_User_Helper_Data')
-        );
-        $this->_urlModelMock = $this->getMock("Mage_Backend_Model_Url", array(), array(), '', false);
-        $this->_appConfigMock = $this->getMock('Mage_Core_Model_Config', array(), array(), '', false);
-        $this->_storeConfigMock = $this->getMock('Mage_Core_Model_Store_Config');
-        $this->_itemValidatorMock = $this->getMock('Mage_Backend_Model_Menu_Item_Validator');
+        $this->_objectFactoryMock = $this->getMock('Magento_ObjectManager');
+        $this->_helperFactoryMock = $this->getMock('Mage_Core_Model_Factory_Helper', array(), array(), '', false);
+        $this->_helperFactoryMock->expects($this->any())->method('get')->will($this->returnValueMap(array(
+            array('Mage_Backend_Helper_Data', 'backend_helper'),
+            array('Mage_User_Helper_Data', 'user_helper')
+        )));
 
-        $this->_params = array(
-            'acl' => $this->_aclMock,
-            'objectFactory' => $this->_objectFactoryMock,
-            'menuFactory' => $this->_factoryMock,
-            'helpers' => $this->_helpers,
-            'urlModel' => $this->_urlModelMock,
-            'appConfig' => $this->_appConfigMock,
-            'storeConfig' => $this->_storeConfigMock,
-            'validator' => $this->_itemValidatorMock
-        );
+        $this->_model = new Mage_Backend_Model_Menu_Item_Factory($this->_objectFactoryMock, $this->_helperFactoryMock);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     * @dataProvider invalidArgumentsProvider
-     */
-    public function testConstructorWithWrongParameterTypesThrowsException($param)
-    {
-        $this->_params[$param] = new Varien_Object();
-        new Mage_Backend_Model_Menu_Item_Factory($this->_params);
-    }
-
-    public function invalidArgumentsProvider()
-    {
-        return array(
-            array('acl'),
-            array('menuFactory'),
-            array('urlModel'),
-            array('appConfig'),
-            array('storeConfig'),
-            array('validator')
-        );
-    }
-
-    public function testCreateFromArray()
+    public function testCreate()
     {
         $this->_objectFactoryMock->expects($this->once())
-            ->method('getModelInstance')
+            ->method('create')
             ->with(
                 $this->equalTo('Mage_Backend_Model_Menu_Item'),
                 $this->equalTo(array(
-                    'module' => $this->_helpers['Mage_User_Helper_Data'],
-                    'dependsOnModule' => 'Mage_User_Helper_Data',
-                    'title' => 'item1',
-                    'acl' => $this->_aclMock,
-                    'menuFactory' => $this->_factoryMock,
-                    'urlModel' => $this->_urlModelMock,
-                    'appConfig' => $this->_appConfigMock,
-                    'storeConfig' => $this->_storeConfigMock,
-                    'validator' => $this->_itemValidatorMock
+                    'helper' => 'user_helper',
+                    'data' => array(
+                        'title' => 'item1',
+                        'dependsOnModule' => 'Mage_User_Helper_Data',
+                    )
                 ))
-        );
-        $model = new Mage_Backend_Model_Menu_Item_Factory($this->_params);
-        $model->createFromArray(array(
+            );
+        $this->_model->create(array(
             'module' => 'Mage_User_Helper_Data',
             'title' => 'item1',
             'dependsOnModule' => 'Mage_User_Helper_Data'
         ));
     }
 
-    public function testCreateFromArrayProvidesDefaultHelper()
+    public function testCreateProvidesDefaultHelper()
     {
         $this->_objectFactoryMock->expects($this->once())
-            ->method('getModelInstance')
+            ->method('create')
             ->with(
                 $this->equalTo('Mage_Backend_Model_Menu_Item'),
                 $this->equalTo(array(
-                    'module' => $this->_helpers['Mage_Backend_Helper_Data'],
-                    'acl' => $this->_aclMock,
-                    'menuFactory' => $this->_factoryMock,
-                    'urlModel' => $this->_urlModelMock,
-                    'appConfig' => $this->_appConfigMock,
-                    'storeConfig' => $this->_storeConfigMock,
-                    'validator' => $this->_itemValidatorMock
+                    'helper' => 'backend_helper',
+                    'data' => array()
                 ))
         );
-        $model = new Mage_Backend_Model_Menu_Item_Factory($this->_params);
-        $model->createFromArray(array());
+        $this->_model->create(array());
     }
 }

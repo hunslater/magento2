@@ -123,16 +123,6 @@
     #RewriteBase /magento/
 
 ############################################
-## uncomment next line to enable light API calls processing
-
-#    RewriteRule ^api/([a-z][0-9a-z_]+)/?$ api.php?type=$1 [QSA,L]
-
-############################################
-## rewrite API2 calls to api.php (by now it is REST only)
-
-    RewriteRule ^api/rest api.php?type=rest [QSA,L]
-
-############################################
 ## workaround for HTTP authorization
 ## in CGI environment
 
@@ -143,11 +133,6 @@
 
     RewriteCond %{REQUEST_METHOD} ^TRAC[EK]
     RewriteRule .* - [L,R=405]
-
-############################################
-## always send 404 on missing files in these folders
-
-    RewriteCond %{REQUEST_URI} !^/(media|js)/
 
 ############################################
 ## never rewrite for existing files, directories and links
@@ -200,3 +185,10 @@
 ## http://developer.yahoo.com/performance/rules.html#etags
 
     #FileETag none
+
+###########################################
+## Deny access  to cron.php
+    <Files cron.php>
+        order allow,deny
+        deny from all
+    </Files>

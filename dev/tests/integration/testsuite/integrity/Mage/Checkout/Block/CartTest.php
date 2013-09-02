@@ -23,7 +23,7 @@
  * @category Mage
  * @package Mage_Checkout
  * @subpackage integration_tests
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -50,7 +50,9 @@ class Integrity_Mage_Checkout_Block_CartTest extends PHPUnit_Framework_TestCase
             $blockNode = $blockNode[0];
             preg_match('/^(.+?_.+?)_/', $blockNode['type'], $matches);
             $params['module'] = $matches[1];
-            $this->assertFileExists(Mage::getDesign()->getFilename($template, $params));
+            $this->assertFileExists(
+                Mage::getObjectmanager()->get('Mage_Core_Model_View_FileSystem')->getFilename($template, $params)
+            );
         }
     }
 

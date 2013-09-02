@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Core_Model_Resource_ConfigTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Core_Model_Resource_Config();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getResourceModel('Mage_Core_Model_Resource_Config');
     }
 
     public function testSaveDeleteConfig()

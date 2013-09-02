@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Bundle
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,11 +33,13 @@ class Mage_Bundle_Block_Adminhtml_Catalog_Product_Edit_Tab_Bundle_Option_SearchT
      */
     public function testToHtmlHasIndex()
     {
-        Mage::getDesign()->setArea('adminhtml');
-        $layout = new Mage_Core_Model_Layout(array('area' => 'adminhtml'));
+        Mage::getDesign()->setArea(Mage_Core_Model_App_Area::AREA_ADMINHTML);
+
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = Mage::getModel('Mage_Core_Model_Layout', array('area' => Mage_Core_Model_App_Area::AREA_ADMINHTML));
         $block = $layout->createBlock(
             'Mage_Bundle_Block_Adminhtml_Catalog_Product_Edit_Tab_Bundle_Option_Search',
-            'block');
+            'block2');
 
         $indexValue = 'magento_index_set_to_test';
         $block->setIndex($indexValue);

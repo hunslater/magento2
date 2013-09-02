@@ -20,7 +20,7 @@
  *
  * @category    Magento
  * @package     tools
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -46,7 +46,7 @@ foreach ($files as $file) {
 
 sort($classes);
 $baseDir = realpath(__DIR__ . '/../../../') . DIRECTORY_SEPARATOR;
-$sources = array('app/code/local', 'app/code/community', 'app/code/core', 'lib',);
+$sources = array('app/code', 'lib',);
 
 $map = array();
 foreach ($classes as $class) {

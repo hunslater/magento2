@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Cron
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,25 +34,20 @@ class Mage_Cron_Model_ObserverTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Cron_Model_Observer;
+        $this->_model = Mage::getModel('Mage_Cron_Model_Observer');
         $this->_model->dispatch('this argument is not used');
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testDispatchScheduled()
     {
-        $collection = new Mage_Cron_Model_Resource_Schedule_Collection;
+        $collection = Mage::getResourceModel('Mage_Cron_Model_Resource_Schedule_Collection');
         $collection->addFieldToFilter('status', Mage_Cron_Model_Schedule::STATUS_PENDING);
         $this->assertGreaterThan(0, $collection->count(), 'Cron has failed to schedule tasks for itself for future.');
     }
 
     public function testDispatchNoFailed()
     {
-        $collection = new Mage_Cron_Model_Resource_Schedule_Collection;
+        $collection = Mage::getResourceModel('Mage_Cron_Model_Resource_Schedule_Collection');
         $collection->addFieldToFilter('status', Mage_Cron_Model_Schedule::STATUS_ERROR);
         foreach ($collection as $item) {
             $this->fail($item->getMessages());

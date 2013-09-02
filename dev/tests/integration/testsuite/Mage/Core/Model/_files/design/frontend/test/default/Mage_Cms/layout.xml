@@ -22,15 +22,10 @@
  * @category    Magento
  * @package     Magento_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 -->
 <layout>
-    <layout_test_handle_extra>
-        <reference name="notifications">
-            <block type="Mage_Index_Block_Adminhtml_Notifications" name="index_notifications" template="index/notifications.phtml" before="-" />
-            <block class="Mage_Index_Block_Adminhtml_Notifications" name="index_notifications_copy" template="index/notifications.phtml" after="-" />
-        </reference>
-    </layout_test_handle_extra>
+    <layout_test_handle_extra />
 </layout>

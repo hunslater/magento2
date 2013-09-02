@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,15 +37,12 @@ class Mage_Catalog_Model_Layer_Filter_ItemTest extends PHPUnit_Framework_TestCas
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Layer_Filter_Item(array(
-            'filter' => new Mage_Catalog_Model_Layer_Filter_Category(),
-            'value'  => array('valuePart1', 'valuePart2'),
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Layer_Filter_Item', array(
+            'data' => array(
+                'filter' => Mage::getModel('Mage_Catalog_Model_Layer_Filter_Category'),
+                'value'  => array('valuePart1', 'valuePart2'),
+            )
         ));
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testGetFilter()
@@ -60,16 +57,22 @@ class Mage_Catalog_Model_Layer_Filter_ItemTest extends PHPUnit_Framework_TestCas
      */
     public function testGetFilterException()
     {
-        $model = new Mage_Catalog_Model_Layer_Filter_Item;
+        /** @var $model Mage_Catalog_Model_Layer_Filter_Item */
+        $model = Mage::getModel('Mage_Catalog_Model_Layer_Filter_Item');
         $model->getFilter();
     }
 
     public function testGetUrl()
     {
-        new Mage_Core_Controller_Front_Action(new Magento_Test_Request(), new Magento_Test_Response());
-        /*
-         * Mage::app()->getFrontController()->setAction($action); // done in action's constructor
-         */
+        $action = Mage::getModel(
+            'Mage_Core_Controller_Front_Action',
+            array(
+                'request' => new Magento_Test_Request(),
+                'response' => new Magento_Test_Response(),
+                'areaCode' => 'frontend',
+            )
+        );
+        Mage::app()->getFrontController()->setAction($action); // done in action's constructor
         $this->assertStringEndsWith('/?cat%5B0%5D=valuePart1&cat%5B1%5D=valuePart2', $this->_model->getUrl());
     }
 
@@ -86,7 +89,7 @@ class Mage_Catalog_Model_Layer_Filter_ItemTest extends PHPUnit_Framework_TestCas
 
         $request = new Magento_Test_Request();
         $request->setParam('cat', 4);
-        $this->_model->getFilter()->apply($request, new Mage_Core_Block_Text());
+        $this->_model->getFilter()->apply($request, Mage::app()->getLayout()->createBlock('Mage_Core_Block_Text'));
 
         $this->assertStringEndsWith('/x/y/z/?cat=3', $this->_model->getRemoveUrl());
     }

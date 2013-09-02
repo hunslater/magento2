@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,13 +34,9 @@ class Mage_Catalog_Model_Product_Type_Configurable_AttributeTest extends PHPUnit
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product_Type_Configurable_Attribute;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product_Type_Configurable_Attribute');
     }
 
-    protected function tearDown()
-    {
-        $this->_model = null;
-    }
     public function testAddPrice()
     {
         $this->assertEmpty($this->_model->getPrices());

@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Errors
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -114,6 +114,11 @@ class Error_Processor
     public $showSendForm;
 
     /**
+     * @var string
+     */
+    public $reportUrl;
+
+    /**
      * Server script name
      *
      * @var string
@@ -163,6 +168,15 @@ class Error_Processor
     }
 
     /**
+     * Process no cache error
+     */
+    public function processNoCache()
+    {
+        $this->pageTitle = 'Error : cached config data is unavailable';
+        $this->_renderPage('nocache.phtml');
+    }
+
+    /**
      * Process 404 error
     */
     public function process404()
@@ -208,7 +222,7 @@ class Error_Processor
      *
      * @return string
      */
-    public function getSkinUrl()
+    public function getViewFileUrl()
     {
         return $this->getBaseUrl() . self::ERROR_DIR. '/' . $this->_config->skin . '/';
     }
@@ -589,7 +603,7 @@ class Error_Processor
     protected function _setReportUrl()
     {
         if ($this->reportId && $this->_config && isset($this->_config->skin)) {
-            $this->reportUrl = "{$this->getBaseUrl(true)}errors/report.php?" . http_build_query(array(
+            $this->reportUrl = "{$this->getBaseUrl(true)}pub/errors/report.php?" . http_build_query(array(
                 'id' => $this->reportId, 'skin' => $this->_config->skin
             ));
         }

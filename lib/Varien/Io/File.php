@@ -18,9 +18,7 @@
  * versions in the future. If you wish to customize Magento for your
  * needs please refer to http://www.magentocommerce.com for more information.
  *
- * @category   Varien
- * @package    Varien_Io
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -63,8 +61,8 @@ class Varien_Io_File extends Varien_Io_Abstract
     const GREP_DIRS = 'dirs_only';
 
     /**
-     * If this variable is set to TRUE, our library will be able to automaticaly create
-     * non-existant directories.
+     * If this variable is set to TRUE, our library will be able to automatically create
+     * non-existent directories.
      *
      * @var bool
      * @access protected
@@ -115,7 +113,9 @@ class Varien_Io_File extends Varien_Io_Abstract
      *
      * @param string $fileName
      * @param string $mode
+     * @param int $chmod
      * @return bool
+     * @throws Exception
      */
     public function streamOpen($fileName, $mode = 'w+', $chmod = 0666)
     {
@@ -128,9 +128,9 @@ class Varien_Io_File extends Varien_Io_Abstract
             ini_set('auto_detect_line_endings', 1);
         }
 
-        @chdir($this->_cwd);
+        $this->_cwd();
         $this->_streamHandler = @fopen($fileName, $mode);
-        @chdir($this->_iwd);
+        $this->_iwd();
         if ($this->_streamHandler === false) {
             throw new Exception('Error write to file ' . $fileName);
         }
@@ -143,6 +143,7 @@ class Varien_Io_File extends Varien_Io_Abstract
     /**
      * Lock file
      *
+     * @param bool $exclusive
      * @return bool
      */
     public function streamLock($exclusive = true)
@@ -189,6 +190,8 @@ class Varien_Io_File extends Varien_Io_Abstract
     /**
      * Gets line from file pointer and parse for CSV fields
      *
+     * @param string $delimiter
+     * @param string $enclosure
      * @return string
      */
     public function streamReadCsv($delimiter = ',', $enclosure = '"')
@@ -287,11 +290,11 @@ class Varien_Io_File extends Varien_Io_Abstract
      * @param array $args
      * @return boolean
      */
-    public function open(array $args=array())
+    public function open(array $args = array())
     {
         if (!empty($args['path'])) {
             if ($args['path']) {
-                if($this->_allowCreateFolders ) {
+                if ($this->_allowCreateFolders) {
                     $this->_createDestinationFolder($args['path']);
                 }
             }
@@ -307,7 +310,7 @@ class Varien_Io_File extends Varien_Io_Abstract
      *
      * @param mixed $flag
      * @access public
-     * @return void
+     * @return Varien_Io_File
      */
     public function setAllowCreateFolders($flag)
     {
@@ -333,19 +336,11 @@ class Varien_Io_File extends Varien_Io_Abstract
      * @param boolean $recursive
      * @return boolean
      */
-    public function mkdir($dir, $mode=0777, $recursive=true)
+    public function mkdir($dir, $mode = 0777, $recursive = true)
     {
-        if ($this->_cwd) {
-            chdir($this->_cwd);
-        }
-
+        $this->_cwd();
         $result = @mkdir($dir, $mode, $recursive);
-        if ($result) {
-            @chmod($dir, $mode);
-        }
-        if ($this->_iwd) {
-            chdir($this->_iwd);
-        }
+        $this->_iwd();
         return $result;
     }
 
@@ -353,15 +348,14 @@ class Varien_Io_File extends Varien_Io_Abstract
      * Delete a directory
      *
      * @param string $dir
+     * @param bool $recursive
      * @return boolean
      */
     public function rmdir($dir, $recursive = false)
     {
-        if ($this->_cwd) {
-            @chdir($this->_cwd);
-        }
+        $this->_cwd();
         $result = self::rmdirRecursive($dir, $recursive);
-        @chdir($this->_iwd);
+        $this->_iwd();
         return $result;
     }
 
@@ -374,20 +368,56 @@ class Varien_Io_File extends Varien_Io_Abstract
     public static function rmdirRecursive($dir, $recursive = true)
     {
         if ($recursive) {
-            if (is_dir($dir)) {
-                foreach (scandir($dir) as $item) {
-                    if (!strcmp($item, '.') || !strcmp($item, '..')) {
-                        continue;
-                    }
-                    self::rmdirRecursive($dir . "/" . $item, $recursive);
-                }
-                $result = @rmdir($dir);
-            } else {
-                $result = @unlink($dir);
-            }
+            $result = self::_recursiveCallback($dir, array('unlink'), array('rmdir'));
         } else {
             $result = @rmdir($dir);
         }
+        return $result;
+    }
+
+    /**
+     * Applies specified callback for a directory/file recursively
+     *
+     * $fileCallback and $dirCallback format: array($callback, $parameters)
+     * - $callback - callable
+     * - $parameters (optional) - array with parameters to be passed to the $callback
+     *
+     * @param string $dir
+     * @param array $fileCallback
+     * @param array $dirCallback
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    protected static function _recursiveCallback($dir, array $fileCallback, array $dirCallback = array())
+    {
+        if (empty($fileCallback) || !is_array($fileCallback) || !is_array($dirCallback)) {
+            throw new InvalidArgumentException("file/dir callback is not specified");
+        }
+        if (empty($dirCallback)) {
+            $dirCallback = $fileCallback;
+        }
+        if (is_dir($dir)) {
+            foreach (scandir($dir) as $item) {
+                if (!strcmp($item, '.') || !strcmp($item, '..')) {
+                    continue;
+                }
+                self::_recursiveCallback($dir . DIRECTORY_SEPARATOR . $item, $fileCallback, $dirCallback);
+            }
+            $callback = $dirCallback[0];
+            if (!is_callable($callback)) {
+                throw new InvalidArgumentException("'dirCallback' parameter is not callable");
+            }
+            $parameters = isset($dirCallback[1]) ? $dirCallback[1] : array();
+        } else {
+            $callback = $fileCallback[0];
+            if (!is_callable($callback)) {
+                throw new InvalidArgumentException("'fileCallback' parameter is not callable");
+            }
+            $parameters = isset($fileCallback[1]) ? $fileCallback[1] : array();
+        }
+        array_unshift($parameters, $dir);
+        $result = @call_user_func_array($callback, $parameters);
+
         return $result;
     }
 
@@ -406,16 +436,16 @@ class Varien_Io_File extends Varien_Io_Abstract
      *
      * @param string $dir
      * @return boolean
+     * @throws Exception
      */
     public function cd($dir)
     {
-        if( is_dir($dir) ) {
-            @chdir($this->_iwd);
+        if (is_dir($dir)) {
+            $this->_iwd();
             $this->_cwd = realpath($dir);
             return true;
         } else {
             throw new Exception('Unable to list current working directory.');
-            return false;
         }
     }
 
@@ -429,18 +459,15 @@ class Varien_Io_File extends Varien_Io_Abstract
      * @param string|resource $dest
      * @return boolean|string
      */
-    public function read($filename, $dest=null)
+    public function read($filename, $dest = null)
     {
+        $this->_cwd();
         if (!is_null($dest)) {
-            chdir($this->_cwd);
             $result = @copy($filename, $dest);
-            chdir($this->_iwd);
-            return $result;
+        } else {
+            $result = @file_get_contents($filename);
         }
-
-        chdir($this->_cwd);
-        $result = @file_get_contents($filename);
-        chdir($this->_iwd);
+        $this->_iwd();
 
         return $result;
     }
@@ -450,9 +477,10 @@ class Varien_Io_File extends Varien_Io_Abstract
      *
      * @param string $filename
      * @param string|resource $src
+     * @param int $mode
      * @return int|boolean
      */
-    public function write($filename, $src, $mode=null)
+    public function write($filename, $src, $mode = null)
     {
         if (is_string($src) && is_readable($src)) {
             $src = realpath($src);
@@ -462,7 +490,7 @@ class Varien_Io_File extends Varien_Io_Abstract
         } else {
             return false;
         }
-        @chdir($this->_cwd);
+        $this->_cwd();
 
         if (file_exists($filename)) {
             if (!is_writeable($filename)) {
@@ -480,37 +508,56 @@ class Varien_Io_File extends Varien_Io_Abstract
         } else {
             $result = @file_put_contents($filename, $src);
         }
-        if (!is_null($mode)) {
+        if (!is_null($mode) && $result) {
             @chmod($filename, $mode);
         }
-        chdir($this->_iwd);
+        $this->_iwd();
         return $result;
     }
 
+    /**
+     * Is file exists
+     *
+     * @param string $file
+     * @param bool $onlyFile
+     * @return bool
+     */
     public function fileExists($file, $onlyFile = true)
     {
-        @chdir($this->_cwd);
+        $this->_cwd();
         $result = file_exists($file);
         if ($result && $onlyFile) {
             $result = is_file($file);
         }
-        @chdir($this->_iwd);
+        $this->_iwd();
         return $result;
     }
 
+    /**
+     * Tells whether the filename is writable
+     *
+     * @param string $path
+     * @return bool
+     */
     public function isWriteable($path)
     {
-        @chdir($this->_cwd);
+        $this->_cwd();
         $result = is_writeable($path);
-        @chdir($this->_iwd);
+        $this->_iwd();
         return $result;
     }
 
-    public function getDestinationFolder($filepath)
+    /**
+     * Get destination folder
+     *
+     * @param string $filePath
+     * @return bool
+     */
+    public function getDestinationFolder($filePath)
     {
-        preg_match('/^(.*[!\/])/', $filepath, $mathces);
-        if (isset($mathces[0])) {
-            return $mathces[0];
+        preg_match('/^(.*[!\/])/', $filePath, $matches);
+        if (isset($matches[0])) {
+            return $matches[0];
         }
         return false;
     }
@@ -535,6 +582,7 @@ class Varien_Io_File extends Varien_Io_Abstract
      * @param string $folder
      * @param int $mode
      * @return bool
+     * @throws Exception
      */
     public function checkAndCreateFolder($folder, $mode = 0777)
     {
@@ -550,44 +598,17 @@ class Varien_Io_File extends Varien_Io_Abstract
         return true;
     }
 
+    /**
+     * Create destination folder
+     *
+     * @param string $destinationFolder
+     * @return bool
+     */
     private function _createDestinationFolder($destinationFolder)
     {
         return $this->checkAndCreateFolder($destinationFolder);
-
-        if( !$destinationFolder ) {
-            return $this;
-        }
-        if (!(@is_dir($destinationFolder) || $this->mkdir($destinationFolder, 0777, true))) {
-            throw new Exception("Unable to create directory '{$destinationFolder}'.");
-        }
-
-        $destinationFolder = str_replace('/', DIRECTORY_SEPARATOR, $destinationFolder);
-        $path = explode(DIRECTORY_SEPARATOR, $destinationFolder);
-        $newPath = null;
-        $oldPath = null;
-        foreach( $path as $key => $directory ) {
-            if (trim($directory)=='') {
-                continue;
-            }
-            if (strlen($directory)===2 && $directory{1}===':') {
-                $newPath = $directory;
-                continue;
-            }
-            $newPath.= ( $newPath != DIRECTORY_SEPARATOR ) ? DIRECTORY_SEPARATOR . $directory : $directory;
-            if( is_dir($newPath) ) {
-                $oldPath = $newPath;
-                continue;
-            } else {
-                if( is_writable($oldPath) ) {
-                    $this->mkdir($newPath, 0777);
-                } else {
-                    throw new Exception("Unable to create directory '{$newPath}'. Access forbidden.");
-                }
-            }
-            $oldPath = $newPath;
-        }
-        return $this;
     }
+
     /**
      * Delete a file
      *
@@ -596,9 +617,9 @@ class Varien_Io_File extends Varien_Io_Abstract
      */
     public function rm($filename)
     {
-        @chdir($this->_cwd);
+        $this->_cwd();
         $result = @unlink($filename);
-        @chdir($this->_iwd);
+        $this->_iwd();
         return $result;
     }
 
@@ -606,14 +627,14 @@ class Varien_Io_File extends Varien_Io_Abstract
      * Rename or move a directory or a file
      *
      * @param string $src
-     * @param string $dest
+     * @param string $destination
      * @return boolean
      */
-    public function mv($src, $dest)
+    public function mv($src, $destination)
     {
-        chdir($this->_cwd);
-        $result = @rename($src, $dest);
-        chdir($this->_iwd);
+        $this->_cwd();
+        $result = @rename($src, $destination);
+        $this->_iwd();
         return $result;
     }
 
@@ -621,14 +642,14 @@ class Varien_Io_File extends Varien_Io_Abstract
      * Copy a file
      *
      * @param string $src
-     * @param string $dest
+     * @param string $destination
      * @return boolean
      */
-    public function cp($src, $dest)
+    public function cp($src, $destination)
     {
-        @chdir($this->_cwd);
-        $result = @copy($src, $dest);
-        @chdir($this->_iwd);
+        $this->_cwd();
+        $result = @copy($src, $destination);
+        $this->_iwd();
         return $result;
     }
 
@@ -637,18 +658,32 @@ class Varien_Io_File extends Varien_Io_Abstract
      *
      * @param string $filename
      * @param int $mode
+     * @param boolean $recursive
      * @return boolean
      */
-    public function chmod($filename, $mode)
+    public function chmod($filename, $mode, $recursive = false)
     {
-        if ($this->_cwd) {
-            chdir($this->_cwd);
+        $this->_cwd();
+        if ($recursive) {
+            $result = self::chmodRecursive($filename, $mode);
+        } else {
+            $result = @chmod($filename, $mode);
         }
-        $result = @chmod($filename, $mode);
-        if ($this->_iwd) {
-            chdir($this->_iwd);
-        }
+        $this->_iwd();
         return $result;
+    }
+
+    /**
+     * Change mode of a directory/file recursively
+     *
+     * @static
+     * @param string $dir
+     * @param int $mode
+     * @return bool
+     */
+    public static function chmodRecursive($dir, $mode)
+    {
+        return self::_recursiveCallback($dir, array('chmod', array($mode)));
     }
 
     /**
@@ -662,16 +697,16 @@ class Varien_Io_File extends Varien_Io_Abstract
      *   - LS_ALL   = 3
      *
      * @param Varien_Io_File const
-     * @access public
      * @return array
+     * @throws Exception
      */
-    public function ls($grep=null)
+    public function ls($grep = null)
     {
         $ignoredDirectories = Array('.', '..');
 
-        if( is_dir($this->_cwd) ) {
+        if ( is_dir($this->_cwd)) {
             $dir = $this->_cwd;
-        } elseif( is_dir($this->_iwd) ) {
+        } elseif (is_dir($this->_iwd)) {
             $dir = $this->_iwd;
         } else {
             throw new Exception('Unable to list current working directory.');
@@ -679,55 +714,79 @@ class Varien_Io_File extends Varien_Io_Abstract
 
         $list = Array();
 
-        if ($dh = opendir($dir)) {
-            while (($entry = readdir($dh)) !== false) {
-                $list_item = Array();
+        $dirHandler = opendir($dir);
+        if ($dirHandler) {
+            while (($entry = readdir($dirHandler)) !== false) {
+                $listItem = Array();
 
-                $fullpath = $dir . DIRECTORY_SEPARATOR . $entry;
+                $fullPath = $dir . DIRECTORY_SEPARATOR . $entry;
 
-                if( ($grep == self::GREP_DIRS) && (!is_dir($fullpath)) ) {
+                if (($grep == self::GREP_DIRS) && (!is_dir($fullPath))) {
                     continue;
-                } elseif( ($grep == self::GREP_FILES) && (!is_file($fullpath)) ) {
+                } elseif (($grep == self::GREP_FILES) && (!is_file($fullPath))) {
                     continue;
-                } elseif( in_array($entry, $ignoredDirectories) ) {
+                } elseif (in_array($entry, $ignoredDirectories)) {
                     continue;
                 }
 
-                $list_item['text'] = $entry;
-                $list_item['mod_date'] = date ('Y-m-d H:i:s', filectime($fullpath));
-                $list_item['permissions'] = $this->_parsePermissions(fileperms($fullpath));
-                $list_item['owner'] = $this->_getFileOwner($fullpath);
+                $listItem['text'] = $entry;
+                $listItem['mod_date'] = date ('Y-m-d H:i:s', filectime($fullPath));
+                $listItem['permissions'] = $this->_parsePermissions(fileperms($fullPath));
+                $listItem['owner'] = $this->_getFileOwner($fullPath);
 
-                if( is_file($fullpath) ) {
-                    $pathinfo = pathinfo($fullpath);
-                    $list_item['size'] = filesize($fullpath);
-                    $list_item['leaf'] = true;
-                    if( isset($pathinfo['extension']) && in_array(strtolower($pathinfo['extension']), Array('jpg', 'jpeg', 'gif', 'bmp', 'png')) && $list_item['size'] > 0 ) {
-                        $list_item['is_image'] = true;
-                        $list_item['filetype'] = $pathinfo['extension'];
-                    } elseif( $list_item['size'] == 0 ) {
-                        $list_item['is_image'] = false;
-                        $list_item['filetype'] = 'unknown';
-                    } elseif( isset($pathinfo['extension']) ) {
-                        $list_item['is_image'] = false;
-                        $list_item['filetype'] = $pathinfo['extension'];
+                if (is_file($fullPath)) {
+                    $pathInfo = pathinfo($fullPath);
+                    $listItem['size'] = filesize($fullPath);
+                    $listItem['leaf'] = true;
+                    if (isset($pathInfo['extension'])
+                        && in_array(strtolower($pathInfo['extension']), array('jpg', 'jpeg', 'gif', 'bmp', 'png'))
+                        && $listItem['size'] > 0
+                    ) {
+                        $listItem['is_image'] = true;
+                        $listItem['filetype'] = $pathInfo['extension'];
+                    } elseif ($listItem['size'] == 0) {
+                        $listItem['is_image'] = false;
+                        $listItem['filetype'] = 'unknown';
+                    } elseif (isset($pathInfo['extension'])) {
+                        $listItem['is_image'] = false;
+                        $listItem['filetype'] = $pathInfo['extension'];
                     } else {
-                        $list_item['is_image'] = false;
-                        $list_item['filetype'] = 'unknown';
+                        $listItem['is_image'] = false;
+                        $listItem['filetype'] = 'unknown';
                     }
                 } else {
-                    $list_item['leaf'] = false;
-                    $list_item['id'] = $fullpath;
+                    $listItem['leaf'] = false;
+                    $listItem['id'] = $fullPath;
                 }
 
-                $list[] = $list_item;
+                $list[] = $listItem;
             }
-            closedir($dh);
+            closedir($dirHandler);
         } else {
             throw new Exception('Unable to list current working directory. Access forbidden.');
         }
 
         return $list;
+    }
+
+    /**
+     * Change directory to current working directory
+     */
+    protected function _cwd()
+    {
+        if ($this->_cwd) {
+            chdir($this->_cwd);
+        }
+    }
+
+    /**
+     * Change directory to initial directory
+     */
+    protected function _iwd()
+    {
+        if ($this->_iwd) {
+            chdir($this->_iwd);
+        }
     }
 
     /**
@@ -739,22 +798,23 @@ class Varien_Io_File extends Varien_Io_Abstract
      */
     protected function _parsePermissions($mode)
     {
-        if( $mode & 0x1000 )
-            $type='p'; /* FIFO pipe */
-        else if( $mode & 0x2000 )
-            $type='c'; /* Character special */
-        else if( $mode & 0x4000 )
-            $type='d'; /* Directory */
-        else if( $mode & 0x6000 )
-            $type='b'; /* Block special */
-        else if( $mode & 0x8000 )
-            $type='-'; /* Regular */
-        else if( $mode & 0xA000 )
-            $type='l'; /* Symbolic Link */
-        else if( $mode & 0xC000 )
-            $type='s'; /* Socket */
-        else
-            $type='u'; /* UNKNOWN */
+        if ($mode & 0x1000) {
+            $type = 'p'; /* FIFO pipe */
+        } elseif ($mode & 0x2000) {
+            $type = 'c'; /* Character special */
+        } elseif ($mode & 0x4000) {
+            $type = 'd'; /* Directory */
+        } elseif ($mode & 0x6000) {
+            $type = 'b'; /* Block special */
+        } elseif ($mode & 0x8000) {
+            $type = '-'; /* Regular */
+        } elseif ($mode & 0xA000) {
+            $type = 'l'; /* Symbolic Link */
+        } elseif ($mode & 0xC000) {
+            $type = 's'; /* Socket */
+        } else {
+            $type = 'u'; /* UNKNOWN */
+        }
 
         /* Determine permissions */
         $owner['read'] = ($mode & 00400) ? 'r' : '-';
@@ -768,17 +828,20 @@ class Varien_Io_File extends Varien_Io_Abstract
         $world['execute'] = ($mode & 00001) ? 'x' : '-';
 
         /* Adjust for SUID, SGID and sticky bit */
-        if( $mode & 0x800 )
-            $owner["execute"] = ($owner['execute']=='x') ? 's' : 'S';
-        if( $mode & 0x400 )
-            $group["execute"] = ($group['execute']=='x') ? 's' : 'S';
-        if( $mode & 0x200 )
-            $world["execute"] = ($world['execute']=='x') ? 't' : 'T';
+        if ($mode & 0x800) {
+            $owner["execute"] = ($owner['execute'] == 'x') ? 's' : 'S';
+        }
+        if ($mode & 0x400) {
+            $group["execute"] = ($group['execute'] == 'x') ? 's' : 'S';
+        }
+        if ($mode & 0x200) {
+            $world["execute"] = ($world['execute'] == 'x') ? 't' : 'T';
+        }
 
-        $s=sprintf('%1s', $type);
-        $s.=sprintf('%1s%1s%1s', $owner['read'], $owner['write'], $owner['execute']);
-        $s.=sprintf('%1s%1s%1s', $group['read'], $group['write'], $group['execute']);
-        $s.=sprintf('%1s%1s%1s', $world['read'], $world['write'], $world['execute']);
+        $s = sprintf('%1s', $type);
+        $s .= sprintf('%1s%1s%1s', $owner['read'], $owner['write'], $owner['execute']);
+        $s .= sprintf('%1s%1s%1s', $group['read'], $group['write'], $group['execute']);
+        $s .= sprintf('%1s%1s%1s', $world['read'], $world['write'], $world['execute']);
         return trim($s);
     }
 
@@ -786,28 +849,61 @@ class Varien_Io_File extends Varien_Io_Abstract
      * Get file owner
      *
      * @param string $filename
-     * @access protected
      * @return string
      */
     protected function _getFileOwner($filename)
     {
-        if( !function_exists('posix_getpwuid') ) {
+        if (!function_exists('posix_getpwuid')) {
             return 'n/a';
         }
 
         $owner     = posix_getpwuid(fileowner($filename));
-        $groupinfo = posix_getgrnam(filegroup($filename));
+        $groupInfo = posix_getgrnam(filegroup($filename));
 
-        return $owner['name'] . ' / ' . $groupinfo;
+        return $owner['name'] . ' / ' . $groupInfo;
     }
 
+    /**
+     * Get directory separator
+     *
+     * @return string
+     */
     public function dirsep()
     {
         return DIRECTORY_SEPARATOR;
     }
 
+    /**
+     * Get directory name
+     *
+     * @param string $file
+     * @return string
+     */
     public function dirname($file)
     {
         return $this->getCleanPath(dirname($file));
+    }
+
+    /**
+     * Get directories list by path\
+     *
+     * @param string $path
+     * @param int $flag
+     * @return array
+     */
+    public function getDirectoriesList($path, $flag = GLOB_ONLYDIR)
+    {
+        return glob($this->getCleanPath($path) . '*', $flag);
+    }
+
+    /**
+     * Get path info
+     *
+     * @param string $path
+     * @return mixed
+     */
+    public function getPathInfo($path)
+    {
+        return pathinfo($path);
     }
 }

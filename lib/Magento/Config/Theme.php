@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Framework
  * @subpackage  Config
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,7 +37,7 @@ class Magento_Config_Theme extends Magento_Config_XmlAbstract
      */
     public function getSchemaFile()
     {
-        return __DIR__ . '/theme.xsd';
+        return __DIR__ . '/etc/theme.xsd';
     }
 
     /**
@@ -59,22 +59,32 @@ class Magento_Config_Theme extends Magento_Config_XmlAbstract
                 $requirementsNode = $themeNode->getElementsByTagName('requirements')->item(0);
                 /** @var $versionNode DOMElement */
                 $versionNode = $requirementsNode->getElementsByTagName('magento_version')->item(0);
+                /** @var $mediaNode DOMElement */
+                $mediaNode = $themeNode->getElementsByTagName('media')->item(0);
 
+                $themeVersion = $themeNode->getAttribute('version');
                 $themeCode = $themeNode->getAttribute('code');
                 $themeParentCode = $themeNode->getAttribute('parent') ?: null;
+                $themeFeatured = $themeNode->getAttribute('featured') ? true : false;
                 $themeTitle = $themeNode->getElementsByTagName('title')->item(0)->nodeValue;
                 $versionFrom = $versionNode->getAttribute('from');
                 $versionTo = $versionNode->getAttribute('to');
+                $previewImage = $mediaNode ? $mediaNode->getElementsByTagName('preview_image')->item(0)->nodeValue : '';
 
                 $result[$packageCode]['title'] = $packageTitle;
                 $result[$packageCode]['themes'][$themeCode] = array(
-                    'title' => $themeTitle,
-                    'parent' => $themeParentCode,
+                    'title'        => $themeTitle,
+                    'parent'       => $themeParentCode,
+                    'featured'     => $themeFeatured,
+                    'version'      => $themeVersion,
                     'requirements' => array(
                         'magento_version' => array(
                             'from' => $versionFrom,
                             'to'   => $versionTo,
                         ),
+                    ),
+                    'media'        => array(
+                        'preview_image' => $previewImage
                     ),
                 );
             }
@@ -83,11 +93,44 @@ class Magento_Config_Theme extends Magento_Config_XmlAbstract
     }
 
     /**
+     * Get package codes
+     *
+     * @return array
+     */
+    public function getPackageCodes()
+    {
+        return array_keys($this->_data);
+    }
+
+    /**
+     * Get theme codes in selected package
+     *
+     * @param string $package
+     * @return array
+     */
+    public function getPackageThemeCodes($package)
+    {
+        return array_keys($this->_data[$package]['themes']);
+    }
+
+    /**
+     * Get title for specified package code
+     *
+     * @param string $package
+     * @param string $theme
+     * @return string
+     */
+    public function getThemeVersion($package, $theme)
+    {
+        $this->_ensureThemeExists($package, $theme);
+        return $this->_data[$package]['themes'][$theme]['version'];
+    }
+
+    /**
      * Get title for specified package code
      *
      * @param string $package
      * @return string
-     * @throws Magento_Exception
      */
     public function getPackageTitle($package)
     {
@@ -109,11 +152,24 @@ class Magento_Config_Theme extends Magento_Config_XmlAbstract
     }
 
     /**
+     * Get theme media data
+     *
+     * @param string $package
+     * @param string $theme
+     * @return array
+     */
+    public function getMedia($package, $theme)
+    {
+        $this->_ensureThemeExists($package, $theme);
+        return $this->_data[$package]['themes'][$theme]['media'];
+    }
+
+    /**
      * Retrieve a parent theme code
      *
      * @param string $package
      * @param string $theme
-     * @return string|null
+     * @return array|null
      */
     public function getParentTheme($package, $theme)
     {
@@ -127,6 +183,19 @@ class Magento_Config_Theme extends Magento_Config_XmlAbstract
             return $result;
         }
         return array($package, $parentTheme);
+    }
+
+    /**
+     * Retrieve is theme featured
+     *
+     * @param string $package
+     * @param string $theme
+     * @return bool
+     */
+    public function isFeatured($package, $theme)
+    {
+        $this->_ensureThemeExists($package, $theme);
+        return $this->_data[$package]['themes'][$theme]['featured'];
     }
 
     /**

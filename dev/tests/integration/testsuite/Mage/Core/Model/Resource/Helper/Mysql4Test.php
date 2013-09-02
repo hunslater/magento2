@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,18 +39,15 @@ class Mage_Core_Model_Resource_Helper_Mysql4Test extends PHPUnit_Framework_TestC
 
     protected function setUp()
     {
-        if (Magento_Test_Bootstrap::getInstance()->getDbVendorName() != 'mysql') {
+        if (Magento_Test_Helper_Bootstrap::getInstance()->getDbVendorName() != 'mysql') {
             $this->markTestSkipped('Test is designed to run on MySQL only.');
         }
-        $this->_model = new Mage_Core_Model_Resource_Helper_Mysql4('core');
-        $collection = new Mage_Core_Model_Resource_Store_Collection();
+        $this->_model = Mage::getResourceModel(
+            'Mage_Core_Model_Resource_Helper_Mysql4',
+            array('modulePrefix' => 'core')
+        );
+        $collection = Mage::getResourceModel('Mage_Core_Model_Resource_Store_Collection');
         $this->_select = $collection->getSelect();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
-        $this->_select = null;
     }
 
     public function testCastField()

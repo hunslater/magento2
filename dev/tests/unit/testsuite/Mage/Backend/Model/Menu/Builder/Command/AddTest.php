@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,7 +33,11 @@ class Mage_Backend_Model_Menu_Builder_Command_AddTest extends PHPUnit_Framework_
     protected $_model;
 
     protected $_params = array(
-        'id' => 'item', 'title' => 'item', 'module' => 'Mage_Backend', 'parent' => 'parent'
+        'id' => 'item',
+        'title' => 'item',
+        'module' => 'Mage_Backend',
+        'parent' => 'parent',
+        'resource' => 'Mage_Backend::item'
     );
 
     public function setUp()

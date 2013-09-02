@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Rss
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbstract
 {
     /**
@@ -43,7 +46,11 @@ class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbs
      */
     public function actionNoFeedDataProvider()
     {
-        return array(array('new'), array('special'), array('salesrule'), array('tag'), array('category'));
+        $actions = array(array('new'), array('special'), array('salesrule'), array('category'));
+        if (Mage::getSingleton('Mage_Core_Helper_Data')->isModuleEnabled('Mage_Tag')) {
+            $actions[] = array('tag');
+        }
+        return $actions;
     }
 
     /**
@@ -86,6 +93,9 @@ class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbs
      */
     public function testTagAction()
     {
+        if (!Mage::getSingleton('Mage_Core_Helper_Data')->isModuleEnabled('Mage_Tag')) {
+            $this->markTestSkipped('"Mage_Tag" module is required for this test.');
+        }
         $this->dispatch('rss/catalog/tag');
         // this test is also inaccurate without a fixture of product with tags
         $this->assertEquals('nofeed', $this->getRequest()->getActionName());
@@ -113,7 +123,7 @@ class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbs
     }
 
     /**
-     * @magentoDataFixture Mage/Catalog/_files/two_products.php
+     * @magentoDataFixture Mage/Catalog/_files/multiple_products.php
      * @magentoConfigFixture current_store cataloginventory/item_options/notify_stock_qty 75
      */
     public function testNotifyStockAction()
@@ -129,6 +139,7 @@ class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbs
         $body = $this->getResponse()->getBody();
         $this->assertNotContains('<![CDATA[Simple Product]]>', $body); // this one was supposed to have qty 100 ( > 75)
         $this->assertContains('<![CDATA[Simple Product2]]>', $body); // 50 < 75
+        $this->assertNotContains('<![CDATA[Simple Product 3]]>', $body);// this one was supposed to have qty 140 ( > 75)
     }
 
     /**
@@ -140,7 +151,7 @@ class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbs
         $this->dispatch('rss/catalog/review');
         $this->assertHeaderPcre('Content-Type', '/text\/xml/');
         $body = $this->getResponse()->getBody();
-        $this->assertContains('"Simple Product2"', $body);
+        $this->assertContains('"Simple Product 3"', $body);
         $this->assertContains('Review text', $body);
     }
 
@@ -162,6 +173,7 @@ class Mage_Rss_CatalogControllerTest extends Magento_Test_TestCase_ControllerAbs
      */
     protected function _loginAdmin()
     {
+        Mage::getDesign()->setArea('adminhtml')->setDefaultDesignTheme();
         $this->getRequest()->setServer(array(
             'PHP_AUTH_USER' => Magento_Test_Bootstrap::ADMIN_NAME,
             'PHP_AUTH_PW' => Magento_Test_Bootstrap::ADMIN_PASSWORD

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -38,12 +38,7 @@ class Mage_Catalog_Model_Resource_Product_CollectionTest extends PHPUnit_Framewo
      */
     protected function setUp()
     {
-        $this->_collection = new Mage_Catalog_Model_Resource_Product_Collection;
-    }
-
-    protected function tearDown()
-    {
-        $this->_collection = null;
+        $this->_collection = Mage::getResourceModel('Mage_Catalog_Model_Resource_Product_Collection');
     }
 
     /**
@@ -70,5 +65,24 @@ class Mage_Catalog_Model_Resource_Product_CollectionTest extends PHPUnit_Framewo
             array(array('sku', 'sku'), array('sku')),
             array(array('sku', 'name', 'sku'), array('name', 'sku')),
         );
+    }
+
+    /**
+     * @magentoDataFixture Mage/Catalog/Model/Resource/_files/url_rewrites.php
+     * @magentoConfigFixture current_store catalog/seo/product_use_categories 1
+     */
+    public function testAddUrlRewrite()
+    {
+        $this->_collection->addUrlRewrite(3);
+        $expectedResult = array(
+            'category-1/url-key.html',
+            'category-1/url-key-1.html',
+            'category-1/url-key-2.html',
+            'category-1/url-key-5.html',
+            'category-1/url-key-1000.html',
+            'category-1/url-key-999.html',
+            'category-1/url-key-asdf.html',
+        );
+        $this->assertEquals($expectedResult, $this->_collection->getColumnValues('request_path'));
     }
 }

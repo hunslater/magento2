@@ -21,11 +21,11 @@
  * @category    Varien
  * @package     Varien_Data
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterAbstract
+class Varien_Data_Collection_DbTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @var Varien_Data_Collection_Db
@@ -34,7 +34,13 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
 
     protected function setUp()
     {
-        $this->_collection = new Varien_Data_Collection_Db;
+        $fetchStrategy = $this->getMockForAbstractClass('Varien_Data_Collection_Db_FetchStrategyInterface');
+        $this->_collection = new Varien_Data_Collection_Db($fetchStrategy);
+    }
+
+    protected function tearDown()
+    {
+        unset($this->_collection);
     }
 
     /**
@@ -42,7 +48,9 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
      */
     public function testSetAddOrder()
     {
-        $adapter = $this->_getAdapterMock('Zend_Db_Adapter_Pdo_Mysql', array('fetchAll'), null);
+        $adapter = $this->getMockForAbstractClass(
+            'Zend_Db_Adapter_Abstract', array(), '', false, true, true, array('fetchAll')
+        );
         $this->_collection->setConnection($adapter);
 
         $select = $this->_collection->getSelect();
@@ -86,7 +94,7 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
      */
     public function testAddFieldToFilter()
     {
-        $adapter = $this->_getAdapterMock('Zend_Db_Adapter_Pdo_Mysql', array('prepareSqlCondition'), null);
+        $adapter = $this->getMock('Zend_Db_Adapter_Pdo_Mysql', array('prepareSqlCondition'), array(), '', false);
         $adapter->expects($this->any())
             ->method('prepareSqlCondition')
             ->with($this->stringContains('is_imported'), $this->anything())
@@ -104,14 +112,14 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
      */
     public function testAddFieldToFilterWithMultipleParams()
     {
-        $adapter = $this->_getAdapterMock('Zend_Db_Adapter_Pdo_Mysql', array('prepareSqlCondition'), null);
+        $adapter = $this->getMock('Zend_Db_Adapter_Pdo_Mysql', array('prepareSqlCondition'), array(), '', false);
         $adapter->expects($this->at(0))
             ->method('prepareSqlCondition')
-            ->with('weight', array('in' => array(1, 3)))
+            ->with('`weight`', array('in' => array(1, 3)))
             ->will($this->returnValue('weight in (1, 3)'));
         $adapter->expects($this->at(1))
             ->method('prepareSqlCondition')
-            ->with('name', array('like' => 'M%'))
+            ->with('`name`', array('like' => 'M%'))
             ->will($this->returnValue("name like 'M%'"));
         $this->_collection->setConnection($adapter);
         $select = $this->_collection->getSelect()->from("test");
@@ -129,7 +137,7 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
         $adapter->expects($this->at(0))
             ->method('prepareSqlCondition')
             ->with(
-                'is_imported',
+                '`is_imported`',
                 $this->anything()
             )
             ->will($this->returnValue('is_imported = 1'));
@@ -146,14 +154,12 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
      */
     public function testAddFieldToFilterValueContainsQuestionMark()
     {
-        $adapter = $this->_getAdapterMock(
-            'Zend_Db_Adapter_Pdo_Mysql',
-            array('select', 'prepareSqlCondition', 'supportStraightJoin'),
-            null
+        $adapter = $this->getMock('Zend_Db_Adapter_Pdo_Mysql',
+            array('select', 'prepareSqlCondition', 'supportStraightJoin'), array(), '', false
         );
         $adapter->expects($this->once())
             ->method('prepareSqlCondition')
-            ->with('email', array('like' => 'value?'))
+            ->with('`email`', array('like' => 'value?'))
             ->will($this->returnValue('email LIKE \'%value?%\''));
         $adapter->expects($this->once())
             ->method('select')
@@ -163,5 +169,96 @@ class Varien_Data_Collection_DbTest extends Magento_Test_TestCase_ZendDbAdapterA
         $select = $this->_collection->getSelect()->from('test');
         $this->_collection->addFieldToFilter('email', array('like' => 'value?'));
         $this->assertEquals("SELECT `test`.* FROM `test` WHERE (email LIKE '%value?%')", $select->assemble());
+    }
+
+    /**
+     * Test that field is quoted when added to SQL via addFieldToFilter()
+     */
+    public function testAddFieldToFilterFieldIsQuoted()
+    {
+        $adapter = $this->getMock('Zend_Db_Adapter_Pdo_Mysql',
+            array('quoteIdentifier', 'prepareSqlCondition'), array(), '', false);
+        $adapter->expects($this->once())
+            ->method('quoteIdentifier')
+            ->with('email')
+            ->will($this->returnValue('`email`'));
+        $adapter->expects($this->any())
+            ->method('prepareSqlCondition')
+            ->with($this->stringContains('`email`'), $this->anything())
+            ->will($this->returnValue('`email` = "foo@example.com"'));
+        $this->_collection->setConnection($adapter);
+        $select = $this->_collection->getSelect()->from('test');
+
+        $this->_collection->addFieldToFilter('email', array('eq' => 'foo@example.com'));
+        $this->assertEquals('SELECT `test`.* FROM `test` WHERE (`email` = "foo@example.com")', $select->assemble());
+    }
+
+    /**
+     * Test that after cloning collection $this->_select in initial and cloned collections
+     * do not reference the same object
+     *
+     * @covers Varien_Data_Collection_Db::__clone
+     */
+    public function testClone()
+    {
+        $adapter = $this->getMockForAbstractClass('Zend_Db_Adapter_Abstract', array(), '', false);
+        $this->_collection->setConnection($adapter);
+        $this->assertInstanceOf('Zend_Db_Select', $this->_collection->getSelect());
+
+        $clonedCollection = clone $this->_collection;
+
+        $this->assertInstanceOf('Zend_Db_Select', $clonedCollection->getSelect());
+        $this->assertNotSame($clonedCollection->getSelect(), $this->_collection->getSelect(),
+            'Collection was cloned but $this->_select in both initial and cloned collections reference the same object'
+        );
+    }
+
+    /**
+     * @param bool $printQuery
+     * @param bool $printFlag
+     * @param string $query
+     * @param string $expected
+     *
+     * @dataProvider printLogQueryPrintingDataProvider
+     */
+    public function testPrintLogQueryPrinting($printQuery, $printFlag, $query, $expected)
+    {
+        $this->expectOutputString($expected);
+        $this->_collection->setFlag('print_query', $printFlag);
+        $this->_collection->printLogQuery($printQuery, false, $query);
+    }
+
+    public function printLogQueryPrintingDataProvider()
+    {
+        return array(
+            array(false, false, 'some_query', ''),
+            array(true,  false, 'some_query', 'some_query'),
+            array(false,  true, 'some_query', 'some_query'),
+        );
+    }
+
+    /**
+     * @param bool $logQuery
+     * @param bool $logFlag
+     * @param int $expectedCalls
+     *
+     * @dataProvider printLogQueryLoggingDataProvider
+     */
+    public function testPrintLogQueryLogging($logQuery, $logFlag, $expectedCalls)
+    {
+        $fetchStrategy = $this->getMock('Varien_Data_Collection_Db_FetchStrategyInterface');
+        $collection = $this->getMock('Varien_Data_Collection_Db', array('_logQuery'), array($fetchStrategy));
+        $collection->setFlag('log_query', $logFlag);
+        $collection->expects($this->exactly($expectedCalls))->method('_logQuery');
+        $collection->printLogQuery(false, $logQuery, 'some_query');
+    }
+
+    public function printLogQueryLoggingDataProvider()
+    {
+        return array(
+            array(true, false, 1),
+            array(false, true, 1),
+            array(false, false, 0),
+        );
     }
 }

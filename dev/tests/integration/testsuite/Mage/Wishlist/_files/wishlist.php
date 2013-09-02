@@ -21,14 +21,14 @@
  * @category    Magento
  * @package     Mage_Wishlist
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 require __DIR__ . '/../../Customer/_files/customer.php';
 require __DIR__ . '/../../Catalog/_files/product_simple.php';
 
-$wishlist = new Mage_Wishlist_Model_Wishlist;
+$wishlist = Mage::getModel('Mage_Wishlist_Model_Wishlist');
 $wishlist->loadByCustomer($customer->getId(), true);
 $item = $wishlist->addNewItem($product, new Varien_Object(array(
 //    'product' => '1',

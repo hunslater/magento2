@@ -21,17 +21,25 @@
  * @category    Magento
  * @package     Magento_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Adminhtml_Block_Widget_Form_ContainerTest extends PHPUnit_Framework_TestCase
 {
     public function testGetFormHtml()
     {
-        $layout = new Mage_Core_Model_Layout();
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
         // Create block with blocking _prepateLayout(), which is used by block to instantly add 'form' child
-        $block = $this->getMock('Mage_Adminhtml_Block_Widget_Form_Container', array('_prepareLayout'));
+        /** @var $block Mage_Adminhtml_Block_Widget_Form_Container */
+        $block = $this->getMock('Mage_Adminhtml_Block_Widget_Form_Container', array('_prepareLayout'),
+            array(Mage::getModel('Mage_Backend_Block_Template_Context'))
+        );
+
         $layout->addBlock($block, 'block');
         $form = $layout->addBlock('Mage_Core_Block_Text', 'form', 'block');
 

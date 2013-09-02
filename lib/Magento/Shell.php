@@ -20,7 +20,7 @@
  *
  * @category    Magento
  * @package     Magento_Shell
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -30,42 +30,20 @@
 class Magento_Shell
 {
     /**
-     * Verbosity of command execution - whether command output is printed to the standard output or not
+     * Logger instance
      *
-     * @var bool
+     * @var Zend_Log
      */
-    protected $_isVerbose;
+    protected $_logger;
 
     /**
      * Constructor
      *
-     * @param bool $isVerbose Whether command output is printed to the standard output or not
+     * @param Zend_Log $logger Logger instance to be used to log commands and their output
      */
-    public function __construct($isVerbose = false)
+    public function __construct(Zend_Log $logger = null)
     {
-        $this->_isVerbose = $isVerbose;
-    }
-
-    /**
-     * Set verbosity
-     *
-     * @param bool $isVerbose
-     * @return Magento_Shell
-     */
-    public function setVerbose($isVerbose)
-    {
-        $this->_isVerbose = $isVerbose;
-        return $this;
-    }
-
-    /**
-     * Get verbosity
-     *
-     * @return bool
-     */
-    public function getVerbose()
-    {
-        return $this->_isVerbose;
+        $this->_logger = $logger;
     }
 
     /**
@@ -73,23 +51,34 @@ class Magento_Shell
      *
      * @param string $command Command with optional argument markers '%s'
      * @param array $arguments Argument values to substitute markers with
-     * @return string
-     * @throws Magento_Exception
+     * @return string Output of an executed command
+     * @throws Magento_Exception if a command returns non-zero exit code
      */
     public function execute($command, array $arguments = array())
     {
         $arguments = array_map('escapeshellarg', $arguments);
+        $command = preg_replace('/\s?\||$/', ' 2>&1$0', $command); // Output errors to STDOUT instead of STDERR
         $command = vsprintf($command, $arguments);
-        /* Output errors to STDOUT instead of STDERR */
-        exec("$command 2>&1", $output, $exitCode);
+        $this->_log($command);
+        exec($command, $output, $exitCode);
         $output = implode(PHP_EOL, $output);
-        if ($this->_isVerbose) {
-            echo $output . PHP_EOL;
-        }
+        $this->_log($output);
         if ($exitCode) {
             $commandError = new Exception($output, $exitCode);
             throw new Magento_Exception("Command `$command` returned non-zero exit code.", 0, $commandError);
         }
         return $output;
+    }
+
+    /**
+     * Log a message, if a logger is specified
+     *
+     * @param string $message
+     */
+    protected function _log($message)
+    {
+        if ($this->_logger) {
+            $this->_logger->log($message, Zend_Log::INFO);
+        }
     }
 }

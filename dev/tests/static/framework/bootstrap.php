@@ -21,20 +21,15 @@
  * @category    Magento
  * @package     Magento
  * @subpackage  static_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-$includePath = array(
+$baseDir = realpath(__DIR__ . '/../../../../');
+require $baseDir . '/app/autoload.php';
+Magento_Autoload_IncludePath::addIncludePath(array(
     __DIR__,
     dirname(__DIR__) . '/testsuite',
-    get_include_path()
-);
-set_include_path(implode(PATH_SEPARATOR, $includePath));
-
-spl_autoload_register(function ($class) {
-    $file = str_replace('_', '/', $class) . '.php';
-    require_once $file;
-});
-
-Utility_Files::init(new Utility_Files(realpath(__DIR__ . '/../../../..')));
+    $baseDir . '/lib',
+));
+Utility_Files::init(new Utility_Files($baseDir));

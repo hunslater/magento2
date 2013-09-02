@@ -1,5 +1,7 @@
 <?php
 /**
+ * Public alias for the application entry point
+ *
  * Magento
  *
  * NOTICE OF LICENSE
@@ -18,18 +20,13 @@
  * versions in the future. If you wish to customize Magento for your
  * needs please refer to http://www.magentocommerce.com for more information.
  *
- * @category   Mage
- * @package    Mage
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-
-require_once '../app/bootstrap.php';
-
-/* Store or website code */
-$mageRunCode = isset($_SERVER['MAGE_RUN_CODE']) ? $_SERVER['MAGE_RUN_CODE'] : '';
-/* Run store or run website */
-$mageRunType = isset($_SERVER['MAGE_RUN_TYPE']) ? $_SERVER['MAGE_RUN_TYPE'] : 'store';
-
-Mage::run($mageRunCode, $mageRunType);
-
+require __DIR__ . '/../app/bootstrap.php';
+Magento_Profiler::start('mage');
+$params = $_SERVER;
+$params[Mage::PARAM_APP_URIS][Mage_Core_Model_Dir::PUB] = '';
+$entryPoint = new Mage_Core_Model_EntryPoint_Http(new Mage_Core_Model_Config_Primary(BP, $params));
+$entryPoint->processRequest();
+Magento_Profiler::stop('mage');

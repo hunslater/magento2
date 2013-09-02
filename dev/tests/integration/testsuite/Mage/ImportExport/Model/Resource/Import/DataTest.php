@@ -21,7 +21,7 @@
  * @category    Mage
  * @package     <package-name>
  * @subpackage  <subpackage-name>
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -41,14 +41,7 @@ class Mage_ImportExport_Model_Resource_Import_DataTest extends PHPUnit_Framework
     {
         parent::setUp();
 
-        $this->_model = new Mage_ImportExport_Model_Resource_Import_Data();
-    }
-
-    protected function tearDown()
-    {
-        unset($this->_model);
-
-        parent::tearDown();
+        $this->_model = Mage::getResourceModel('Mage_ImportExport_Model_Resource_Import_Data');
     }
 
     /**

@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoDataFixture Mage/Adminhtml/controllers/_files/cache/all_types_disabled.php
+ */
 class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -32,27 +35,94 @@ class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
      */
     protected $_model;
 
-    public static function setUpBeforeClass()
-    {
-        Mage::getConfig()->setOptions(array(
-            'locale_dir' => dirname(__FILE__) . '/_files/locale',
-            'design_dir' => dirname(__FILE__) . '/_files/design',
-        ));
-        Mage::getDesign()->setArea('frontend')
-            ->setDesignTheme('test/default/default');
-    }
+    /**
+     * @var Mage_Core_Model_View_DesignInterface
+     */
+    protected $_designModel;
+
+    /**
+     * @var Mage_Core_Model_View_FileSystem
+     */
+    protected $_viewFileSystem;
 
     public function setUp()
     {
+        $pathChunks = array(dirname(__FILE__), '_files', 'design', 'frontend', 'test', 'default', 'locale', 'en_US',
+            'translate.csv');
+
+        $this->_viewFileSystem = $this->getMock('Mage_Core_Model_View_FileSystem',
+            array('getLocaleFileName', 'getDesignTheme'), array(), '', false);
+
+
+        $this->_viewFileSystem->expects($this->any())
+            ->method('getLocaleFileName')
+            ->will($this->returnValue(implode(DIRECTORY_SEPARATOR, $pathChunks)));
+
+        $theme = $this->getMock('Mage_Core_Model_Theme', array('getId', 'getCollection'), array(), '', false);
+        $theme->expects($this->any())
+            ->method('getId')
+            ->will($this->returnValue(10));
+
+        $collection = $this->getMock('Mage_Core_Model_Theme', array('getThemeByFullPath'), array(), '', false);
+        $collection->expects($this->any())
+            ->method('getThemeByFullPath')
+            ->will($this->returnValue($theme));
+
+        $theme->expects($this->any())
+            ->method('getCollection')
+            ->will($this->returnValue($collection));
+
+        $this->_viewFileSystem->expects($this->any())
+            ->method('getDesignTheme')
+            ->will($this->returnValue($theme));
+
+        Mage::getObjectManager()->addSharedInstance($this->_viewFileSystem, 'Mage_Core_Model_View_FileSystem');
+
         Mage::getConfig()->setModuleDir('Mage_Core', 'locale', dirname(__FILE__) . '/_files/Mage/Core/locale');
         Mage::getConfig()->setModuleDir('Mage_Catalog', 'locale', dirname(__FILE__) . '/_files/Mage/Catalog/locale');
-        $this->_model = new Mage_Core_Model_Translate();
-        $this->_model->init('frontend');
+
+        $this->_designModel = $this->getMock('Mage_Core_Model_View_Design',
+            array('getDesignTheme'),
+            array(
+                Mage::getSingleton('Mage_Core_Model_StoreManagerInterface'),
+                Mage::getSingleton('Mage_Core_Model_Theme_FlyweightFactory')
+            )
+        );
+
+        $this->_designModel->expects($this->any())
+            ->method('getDesignTheme')
+            ->will($this->returnValue($theme));
+
+        Mage::getObjectManager()->addSharedInstance($this->_designModel, 'Mage_Core_Model_View_Design');
+
+        $this->_model = Mage::getModel('Mage_Core_Model_Translate');
+        $this->_model->init(Mage_Core_Model_App_Area::AREA_FRONTEND);
     }
 
-    protected function tearDown()
+    /**
+     * @magentoDataFixture Mage/Core/_files/db_translate.php
+     * @magentoDataFixture Mage/Adminhtml/controllers/_files/cache/all_types_enabled.php
+     */
+    public function testInitCaching()
     {
-        $this->_model = null;
+        // ensure string translation is cached
+        $this->_model->init(Mage_Core_Model_App_Area::AREA_FRONTEND, null);
+
+        /** @var Mage_Core_Model_Resource_Translate_String $translateString */
+        $translateString = Mage::getModel('Mage_Core_Model_Resource_Translate_String');
+        $translateString->saveTranslate('Fixture String', 'New Db Translation');
+
+        $this->_model->init(Mage_Core_Model_App_Area::AREA_FRONTEND, null);
+        $this->assertEquals(
+            'Fixture Db Translation', $this->_model->translate(array('Fixture String')),
+            'Translation is expected to be cached'
+        );
+
+        $this->_model->init(Mage_Core_Model_App_Area::AREA_FRONTEND, null, true);
+        $this->assertEquals(
+            'New Db Translation', $this->_model->translate(array('Fixture String')),
+            'Forced load should not use cache'
+        );
     }
 
     public function testGetModulesConfig()
@@ -70,12 +140,13 @@ class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
             '<Mage_Core>
                 <files>
                     <default>Mage_Core.csv</default>
+                    <fixture>../../../../../../dev/tests/integration/testsuite/Mage/Core/_files/fixture.csv</fixture>
                 </files>
             </Mage_Core>',
             $modulesConfig->$checkedNode->asXML()
         );
 
-        $this->_model->init('non_existing_area');
+        $this->_model->init('non_existing_area', null, true);
         $this->assertEquals(array(), $this->_model->getModulesConfig());
     }
 
@@ -84,13 +155,14 @@ class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('frontend', $this->_model->getConfig(Mage_Core_Model_Translate::CONFIG_KEY_AREA));
         $this->assertEquals('en_US', $this->_model->getConfig(Mage_Core_Model_Translate::CONFIG_KEY_LOCALE));
         $this->assertEquals(1, $this->_model->getConfig(Mage_Core_Model_Translate::CONFIG_KEY_STORE));
-        $this->assertEquals('test', $this->_model->getConfig(Mage_Core_Model_Translate::CONFIG_KEY_DESIGN_PACKAGE));
-        $this->assertEquals('default', $this->_model->getConfig(Mage_Core_Model_Translate::CONFIG_KEY_DESIGN_THEME));
+        $this->assertEquals(Mage::getDesign()->getDesignTheme()->getId(),
+            $this->_model->getConfig(Mage_Core_Model_Translate::CONFIG_KEY_DESIGN_THEME));
         $this->assertNull($this->_model->getConfig('non_existing_key'));
     }
 
     public function testGetData()
     {
+        $this->markTestIncomplete('Bug MAGETWO-6986');
         $expectedData = include(dirname(__FILE__) . '/Translate/_files/_translation_data.php');
         $this->assertEquals($expectedData, $this->_model->getData());
     }
@@ -114,14 +186,21 @@ class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @magentoAppIsolation enabled
      * @dataProvider translateDataProvider
      */
     public function testTranslate($inputText, $expectedTranslation)
     {
+        $this->_model = Mage::getModel('Mage_Core_Model_Translate');
+        $this->_model->init(Mage_Core_Model_App_Area::AREA_FRONTEND);
+
         $actualTranslation = $this->_model->translate(array($inputText));
         $this->assertEquals($expectedTranslation, $actualTranslation);
     }
 
+    /**
+     * @return array
+     */
     public function translateDataProvider()
     {
         return array(
@@ -131,22 +210,26 @@ class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
                 'Text with different translation on different modules'
             ),
             array(
-                new Mage_Core_Model_Translate_Expr(
-                    'Text with different translation on different modules',
-                    'Mage_Core'
-                ),
+                Mage::getModel('Mage_Core_Model_Translate_Expr', array(
+                    'text'   => 'Text with different translation on different modules',
+                    'module' => 'Mage_Core'
+                )),
                 'Text translation by Mage_Core module'
             ),
             array(
-                new Mage_Core_Model_Translate_Expr(
-                    'Text with different translation on different modules',
-                    'Mage_Catalog'
-                ),
+                Mage::getModel('Mage_Core_Model_Translate_Expr', array(
+                    'text'   => 'Text with different translation on different modules',
+                    'module' => 'Mage_Catalog'
+                )),
                 'Text translation by Mage_Catalog module'
             ),
             array(
-                new Mage_Core_Model_Translate_Expr('text_with_no_translation'),
+                Mage::getModel('Mage_Core_Model_Translate_Expr', array('text' => 'text_with_no_translation')),
                 'text_with_no_translation'
+            ),
+            array(
+                'Design value to translate',
+                'Design translated value'
             )
         );
     }
@@ -158,27 +241,30 @@ class Mage_Core_Model_TranslateTest extends PHPUnit_Framework_TestCase
      */
     public function testTranslateWithLocaleInheritance($inputText, $expectedTranslation)
     {
-        $model = new Mage_Core_Model_Translate();
-        $model->setLocale('en_AU');
-        $model->init('frontend');
-        $this->assertEquals($expectedTranslation, $model->translate(array($inputText)));
+        Mage::app()->getArea(Mage_Core_Model_App_Area::AREA_FRONTEND)->load();
+        $this->_model->setLocale('en_AU');
+        $this->_model->init(Mage_Core_Model_App_Area::AREA_FRONTEND);
+        $this->assertEquals($expectedTranslation, $this->_model->translate(array($inputText)));
     }
 
+    /**
+     * @return array
+     */
     public function translateWithLocaleInheritanceDataProvider()
     {
         return array(
             array(
-                new Mage_Core_Model_Translate_Expr(
-                    'Text with different translation on different modules',
-                    'Mage_Core'
-                ),
+                Mage::getModel('Mage_Core_Model_Translate_Expr', array(
+                    'text'   => 'Text with different translation on different modules',
+                    'module' => 'Mage_Core'
+                )),
                 'Text translation by Mage_Core module in en_UK'
             ),
             array(
-                new Mage_Core_Model_Translate_Expr(
-                    'Original value for Mage_Core module',
-                    'Mage_Core'
-                ),
+                Mage::getModel('Mage_Core_Model_Translate_Expr', array(
+                    'text'   => 'Original value for Mage_Core module',
+                    'module' => 'Mage_Core'
+                )),
                 'Translated value for Mage_Core module in en_AU'
             ),
         );

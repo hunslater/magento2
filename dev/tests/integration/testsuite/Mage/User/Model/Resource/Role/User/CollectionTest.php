@@ -20,12 +20,13 @@
  *
  * @category    Mage
  * @package     Mage_User
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Role user collection test
+ * @magentoAppArea adminhtml
  */
 class Mage_User_Model_Resource_Role_User_CollectionTest extends PHPUnit_Framework_TestCase
 {
@@ -36,12 +37,7 @@ class Mage_User_Model_Resource_Role_User_CollectionTest extends PHPUnit_Framewor
 
     protected function setUp()
     {
-        $this->_collection = new Mage_User_Model_Resource_Role_User_Collection();
-    }
-
-    protected function tearDown()
-    {
-        $this->_collection = null;
+        $this->_collection = Mage::getResourceModel('Mage_User_Model_Resource_Role_User_Collection');
     }
 
     public function testSelectQueryInitialized()

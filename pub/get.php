@@ -1,6 +1,7 @@
 <?php
-
 /**
+ * Public media files entry point
+ *
  * Magento
  *
  * NOTICE OF LICENSE
@@ -21,144 +22,66 @@
  *
  * @category   Mage
  * @package    Mage
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
-require_once '../app/bootstrap.php';
 
-$varDirectory = BP . DS . Mage_Core_Model_Config_Options::VAR_DIRECTORY;
-$publicDirectory = BP . DS . Mage_Core_Model_Config_Options::PUB_DIRECTORY;
-$configCacheFile = $varDirectory . DS . 'resource_config.json';
+require dirname(__DIR__) . '/app/bootstrap.php';
 
 $mediaDirectory = null;
 $allowedResources = array();
+$configCacheFile = dirname(__DIR__) . '/var/resource_config.json';
+$relativeFilename = null;
 
-if (file_exists($configCacheFile) && is_readable($configCacheFile)) {
-    $config = json_decode(file_get_contents($configCacheFile), true);
-
-    //checking update time
-    if (filemtime($configCacheFile) + $config['update_time'] > time()) {
-        $mediaDirectory = trim(str_replace($publicDirectory, '', $config['media_directory']), DS);
-        $allowedResources = array_merge($allowedResources, $config['allowed_resources']);
-    }
-}
-
-$request = new Zend_Controller_Request_Http();
-
-$pathInfo = str_replace('..', '', ltrim($request->getPathInfo(), '/'));
-
-$filePath = str_replace('/', DS, $publicDirectory . DS . $pathInfo);
-
-if ($mediaDirectory) {
-    if (0 !== stripos($pathInfo, $mediaDirectory . '/') || is_dir($filePath)) {
-        sendNotFoundPage();
-    }
-
-    $relativeFilename = str_replace($mediaDirectory . '/', '', $pathInfo);
-    checkResource($relativeFilename, $allowedResources);
-    sendFile($filePath);
-}
-
-/* Store or website code */
-$mageRunCode = isset($_SERVER['MAGE_RUN_CODE']) ? $_SERVER['MAGE_RUN_CODE'] : '';
-
-/* Run store or run website */
-$mageRunType = isset($_SERVER['MAGE_RUN_TYPE']) ? $_SERVER['MAGE_RUN_TYPE'] : 'store';
-
-if (empty($mediaDirectory)) {
-    Mage::init($mageRunCode, $mageRunType);
-} else {
-    Mage::init(
-        $mageRunCode,
-        $mageRunType,
-        array('cache' => array('disallow_save' => true)),
-        array('Mage_Core')
-    );
-}
-
-if (!$mediaDirectory) {
-    $config = Mage_Core_Model_File_Storage::getScriptConfig();
-    $mediaDirectory = str_replace($publicDirectory, '', $config['media_directory']);
-    $allowedResources = array_merge($allowedResources, $config['allowed_resources']);
-
-    $relativeFilename = str_replace($mediaDirectory . '/', '', $pathInfo);
-
-    $fp = fopen($configCacheFile, 'w');
-    if (flock($fp, LOCK_EX | LOCK_NB)) {
-        ftruncate($fp, 0);
-        fwrite($fp, json_encode($config));
-    }
-    flock($fp, LOCK_UN);
-    fclose($fp);
-
-    checkResource($relativeFilename, $allowedResources);
-}
-
-if (0 !== stripos($pathInfo, $mediaDirectory . '/')) {
-    sendNotFoundPage();
-}
-
-try {
-    $databaseFileSotrage = Mage::getModel('Mage_Core_Model_File_Storage_Database');
-    $databaseFileSotrage->loadByFilename($relativeFilename);
-} catch (Exception $e) {
-}
-if ($databaseFileSotrage->getId()) {
-    $directory = dirname($filePath);
-    if (!is_dir($directory)) {
-        mkdir($directory, 0777, true);
-    }
-
-    $fp = fopen($filePath, 'w');
-    if (flock($fp, LOCK_EX | LOCK_NB)) {
-        ftruncate($fp, 0);
-        fwrite($fp, $databaseFileSotrage->getContent());
-    }
-    flock($fp, LOCK_UN);
-    fclose($fp);
-}
-
-sendFile($filePath);
-sendNotFoundPage();
-
-/**
- * Send 404
- */
-function sendNotFoundPage()
-{
-    header('HTTP/1.0 404 Not Found');
-    exit;
-}
-
-/**
- * Check resource by whitelist
- *
- * @param string $resource
- * @param array $allowedResources
- */
-function checkResource($resource, array $allowedResources)
-{
+$isAllowed = function ($resource, array $allowedResources) {
     $isResourceAllowed = false;
     foreach ($allowedResources as $allowedResource) {
         if (0 === stripos($resource, $allowedResource)) {
             $isResourceAllowed = true;
         }
     }
+    return $isResourceAllowed;
+};
 
-    if (!$isResourceAllowed) {
-        sendNotFoundPage();
+if (file_exists($configCacheFile) && is_readable($configCacheFile)) {
+    $config = json_decode(file_get_contents($configCacheFile), true);
+
+    //checking update time
+    if (filemtime($configCacheFile) + $config['update_time'] > time()) {
+        $mediaDirectory = trim(str_replace(__DIR__, '', $config['media_directory']), DS);
+        $allowedResources = array_merge($allowedResources, $config['allowed_resources']);
     }
 }
-/**
- * Send file to browser
- *
- * @param string $file
- */
-function sendFile($file)
-{
-    if (file_exists($file) || is_readable($file)) {
+
+// Serve file if it's materialized
+$request = new Mage_Core_Model_File_Storage_Request(__DIR__);
+if ($mediaDirectory) {
+    if (0 !== stripos($request->getPathInfo(), $mediaDirectory . '/') || is_dir($request->getFilePath())) {
+        header('HTTP/1.0 404 Not Found');
+        exit;
+    }
+
+    $relativeFilename = str_replace($mediaDirectory . '/', '', $request->getPathInfo());
+    if (!$isAllowed($relativeFilename, $allowedResources)) {
+        header('HTTP/1.0 404 Not Found');
+        exit;
+    }
+
+    if (is_readable($request->getFilePath())) {
         $transfer = new Varien_File_Transfer_Adapter_Http();
-        $transfer->send($file);
+        $transfer->send($request->getFilePath());
         exit;
     }
 }
+// Materialize file in application
+$params = $_SERVER;
+if (empty($mediaDirectory)) {
+    $params[Mage::PARAM_ALLOWED_MODULES] = array('Mage_Core');
+    $params[Mage::PARAM_CACHE_OPTIONS]['frontend_options']['disable_save'] = true;
+}
+
+$config = new Mage_Core_Model_Config_Primary(dirname(__DIR__), $params);
+$entryPoint = new Mage_Core_Model_EntryPoint_Media(
+    $config, $request, $isAllowed, __DIR__, $mediaDirectory, $configCacheFile, $relativeFilename
+);
+$entryPoint->processRequest();

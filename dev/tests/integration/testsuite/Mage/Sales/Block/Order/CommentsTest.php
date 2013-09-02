@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Sales
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Sales_Block_Order_CommentsTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_block = new Mage_Sales_Block_Order_Comments;
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
+        $this->_block = Mage::app()->getLayout()->createBlock('Mage_Sales_Block_Order_Comments');
     }
 
     /**
@@ -61,15 +56,15 @@ class Mage_Sales_Block_Order_CommentsTest extends PHPUnit_Framework_TestCase
     {
         return array(
             array(
-                new Mage_Sales_Model_Order_Invoice,
+                Mage::getModel('Mage_Sales_Model_Order_Invoice'),
                 'Mage_Sales_Model_Resource_Order_Invoice_Comment_Collection'
             ),
             array(
-                new Mage_Sales_Model_Order_Creditmemo,
+                Mage::getModel('Mage_Sales_Model_Order_Creditmemo'),
                 'Mage_Sales_Model_Resource_Order_Creditmemo_Comment_Collection'
             ),
             array(
-                new Mage_Sales_Model_Order_Shipment,
+                Mage::getModel('Mage_Sales_Model_Order_Shipment'),
                 'Mage_Sales_Model_Resource_Order_Shipment_Comment_Collection'
             )
         );
@@ -80,7 +75,7 @@ class Mage_Sales_Block_Order_CommentsTest extends PHPUnit_Framework_TestCase
      */
     public function testGetCommentsWrongEntityException()
     {
-        $entity = new Mage_Catalog_Model_Product;
+        $entity = Mage::getModel('Mage_Catalog_Model_Product');
         $this->_block->setEntity($entity);
         $this->_block->getComments();
     }

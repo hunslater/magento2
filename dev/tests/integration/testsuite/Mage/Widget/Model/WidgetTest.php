@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Widget_Model_WidgetTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Widget_Model_Widget;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Widget_Model_Widget');
     }
 
     public function testGetWidgetsArray()
@@ -65,12 +60,13 @@ class Mage_Widget_Model_WidgetTest extends PHPUnit_Framework_TestCase
      */
     public function testGetPlaceholderImageUrl($type, $expectedFile)
     {
-        Mage::getDesign()->setDesignTheme('default/default/default', 'adminhtml');
-        $expectedPubFile = Mage::getBaseDir('media') . "/skin/adminhtml/default/default/default/en_US/{$expectedFile}";
+        Mage::getDesign()->setDesignTheme('default/basic', 'adminhtml');
+        $expectedPubFile = Mage::getBaseDir(Mage_Core_Model_Dir::STATIC_VIEW)
+            . "/adminhtml/default/basic/en_US/{$expectedFile}";
         if (file_exists($expectedPubFile)) {
             unlink($expectedPubFile);
         }
-
+        $expectedPubFile = str_replace('/', DIRECTORY_SEPARATOR, $expectedPubFile);
         $url = $this->_model->getPlaceholderImageUrl($type);
         $this->assertStringEndsWith($expectedFile, $url);
         $this->assertFileExists($expectedPubFile);
@@ -95,20 +91,25 @@ class Mage_Widget_Model_WidgetTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Tests, that skin file is found anywhere in skin folders, not only in module directory.
+     * Tests, that theme file is found anywhere in theme folders, not only in module directory.
      *
+     * @magentoDataFixture Mage/Widget/_files/themes.php
      * @magentoAppIsolation enabled
      */
-    public function testGetPlaceholderImageUrlAtSkin()
+    public function testGetPlaceholderImageUrlAtTheme()
     {
-        Mage::getConfig()->getOptions()->setDesignDir(dirname(__DIR__) . '/_files/design');
+        Magento_Test_Helper_Bootstrap::getInstance()->reinitialize(array(
+            Mage::PARAM_APP_DIRS => array(
+                Mage_Core_Model_Dir::THEMES => dirname(__DIR__) . '/_files/design'
+            )
+        ));
         $actualFile = $this->testGetPlaceholderImageUrl(
             'Mage_Catalog_Block_Product_Widget_New',
             'Mage_Catalog/images/product_widget_new.gif'
         );
 
         $expectedFile = dirname(__DIR__)
-            . '/_files/design/adminhtml/default/default/skin/default/Mage_Catalog/images/product_widget_new.gif';
+            . '/_files/design/adminhtml/default/basic/Mage_Catalog/images/product_widget_new.gif';
         $this->assertFileEquals($expectedFile, $actualFile);
     }
 }

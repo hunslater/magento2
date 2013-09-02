@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -42,12 +42,14 @@ class Mage_Core_Model_Resource_Db_AbstractTest extends PHPUnit_Framework_TestCas
 
     public function setUp()
     {
-        $this->_resource = $this->getMock('Mage_Core_Model_Resource', array('getConnection'));
+        $this->_resource = $this->getMock('Mage_Core_Model_Resource',
+            array('getConnection'), array(), '', false, false
+        );
         $this->_model = $this->getMock(
             'Mage_Core_Model_Resource_Db_Abstract',
             array('_construct', '_getWriteAdapter'),
             array(
-                array('resource' => $this->_resource)
+                $this->_resource
             )
         );
     }
@@ -64,16 +66,6 @@ class Mage_Core_Model_Resource_Db_AbstractTest extends PHPUnit_Framework_TestCas
             ->with('core_read')
         ;
         $this->_model->getReadConnection();
-    }
-
-    /**
-     * Test that only valid resource instance can be passed to the constructor
-     *
-     * @expectedException InvalidArgumentException
-     */
-    public function testConstructorException()
-    {
-        $this->_model->__construct(array('resource' => new stdClass()));
     }
 
     /**

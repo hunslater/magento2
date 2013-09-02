@@ -21,14 +21,14 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_Backend_Model_Auth.
  *
- * @group module:Mage_Backend
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Model_AuthTest extends PHPUnit_Framework_TestCase
 {
@@ -39,12 +39,10 @@ class Mage_Backend_Model_AuthTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Backend_Model_Auth();
-    }
+        parent::setUp();
 
-    protected function tearDown()
-    {
-        $this->_model = null;
+        Mage::app()->loadArea(Mage_Core_Model_App_Area::AREA_ADMINHTML);
+        $this->_model = Mage::getModel('Mage_Backend_Model_Auth');
     }
 
     /**

@@ -21,11 +21,11 @@
  * @category    Magento
  * @package     Mage_Paypal
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-$quote = new Mage_Sales_Model_Quote();
+$quote = Mage::getModel('Mage_Sales_Model_Quote');
 $quote->load('test01', 'reserved_order_id');
 
 $payment = $quote->getPayment();

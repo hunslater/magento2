@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,15 +39,10 @@ class Mage_Catalog_Model_Product_Attribute_Backend_TierpriceTest extends PHPUnit
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product_Attribute_Backend_Tierprice;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product_Attribute_Backend_Tierprice');
         $this->_model->setAttribute(
             Mage::getSingleton('Mage_Eav_Model_Config')->getAttribute('catalog_product', 'tier_price')
         );
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testValidate()
@@ -111,7 +106,8 @@ class Mage_Catalog_Model_Product_Attribute_Backend_TierpriceTest extends PHPUnit
 
     public function testAfterLoad()
     {
-        $product = new Mage_Catalog_Model_Product();
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->setId(1);
         $this->_model->afterLoad($product);
         $price = $product->getTierPrice();
@@ -121,8 +117,9 @@ class Mage_Catalog_Model_Product_Attribute_Backend_TierpriceTest extends PHPUnit
 
     public function testAfterSave()
     {
-        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID));
-        $product = new Mage_Catalog_Model_Product();
+        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_AppInterface::ADMIN_STORE_ID));
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->load(1);
         $product->setOrigData();
         $product->setTierPrice(
@@ -136,7 +133,7 @@ class Mage_Catalog_Model_Product_Attribute_Backend_TierpriceTest extends PHPUnit
 
         $this->_model->afterSave($product);
 
-        $product = new Mage_Catalog_Model_Product();
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->setId(1);
         $this->_model->afterLoad($product);
         $this->assertEquals(3, count($product->getTierPrice()));
@@ -147,14 +144,15 @@ class Mage_Catalog_Model_Product_Attribute_Backend_TierpriceTest extends PHPUnit
      */
     public function testAfterSaveEmpty()
     {
-        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID));
-        $product = new Mage_Catalog_Model_Product();
+        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_AppInterface::ADMIN_STORE_ID));
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->load(1);
         $product->setOrigData();
         $product->setTierPrice(array());
         $this->_model->afterSave($product);
 
-        $product = new Mage_Catalog_Model_Product();
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->setId(1);
         $this->_model->afterLoad($product);
         $this->assertEmpty($product->getTierPrice());

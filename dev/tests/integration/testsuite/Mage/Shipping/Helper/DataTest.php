@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Shipping
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Shipping_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_helper = new Mage_Shipping_Helper_Data;
-    }
-
-    protected function tearDown()
-    {
-        $this->_helper = null;
+        $this->_helper = Mage::helper('Mage_Shipping_Helper_Data');
     }
 
     /**
@@ -52,7 +47,7 @@ class Mage_Shipping_Helper_DataTest extends PHPUnit_Framework_TestCase
      */
     public function testGetTrackingPopupUrlBySalesModel($modelName, $getIdMethod, $entityId, $code, $expected)
     {
-        $model = $this->getMock($modelName, array($getIdMethod, 'getProtectCode'));
+        $model = $this->getMock($modelName, array($getIdMethod, 'getProtectCode'), array(), '', false);
         $model->expects($this->any())
             ->method($getIdMethod)
             ->will($this->returnValue($entityId));

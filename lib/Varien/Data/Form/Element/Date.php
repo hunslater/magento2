@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -38,7 +38,7 @@ class Varien_Data_Form_Element_Date extends Varien_Data_Form_Element_Abstract
      */
     protected $_value;
 
-    public function __construct($attributes=array())
+    public function __construct($attributes = array())
     {
         parent::__construct($attributes);
         $this->setType('text');
@@ -49,7 +49,7 @@ class Varien_Data_Form_Element_Date extends Varien_Data_Form_Element_Abstract
     }
 
     /**
-     * If script executes on x64 system, converts large 
+     * If script executes on x64 system, converts large
      * numeric values to timestamp limit
      */
     protected function _toTimestamp($value)
@@ -62,7 +62,7 @@ class Varien_Data_Form_Element_Date extends Varien_Data_Form_Element_Abstract
 
         return $value;
     }
-    
+
 
     /**
      * Set date value
@@ -104,8 +104,7 @@ class Varien_Data_Form_Element_Date extends Varien_Data_Form_Element_Abstract
         }
         try {
             $this->_value = new Zend_Date($value, $format, $locale);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->_value = '';
         }
         return $this;
@@ -124,7 +123,7 @@ class Varien_Data_Form_Element_Date extends Varien_Data_Form_Element_Abstract
             return '';
         }
         if (null === $format) {
-            $format = $this->getFormat();
+            $format = $this->getDateFormat();
         }
         return $this->_value->toString($format);
     }
@@ -148,43 +147,43 @@ class Varien_Data_Form_Element_Date extends Varien_Data_Form_Element_Abstract
      * - the value must be instantiated (Zend_Date)
      * - output format must be set (compatible with Zend_Date)
      *
+     * @throws Exception
      * @return string
      */
     public function getElementHtml()
     {
         $this->addClass('input-text');
+        $dateFormat = $this->getDateFormat();
+        $timeFormat = $this->getTimeFormat();
+        if (empty($dateFormat)) {
+            throw new Exception('Output format is not specified. '
+                . 'Please, specify "format" key in constructor, or set it using setFormat().');
+        }
+
+        $dataInit = 'data-mage-init="'
+            . $this->_escape(json_encode(
+                array(
+                    'calendar' => array(
+                        'dateFormat' => $dateFormat,
+                        'showsTime' => !empty($timeFormat),
+                        'timeFormat' => $timeFormat,
+                        'buttonImage' => $this->getImage(),
+                        'buttonText' => 'Select Date',
+                        'disabled' => $this->getDisabled(),
+                    )
+                )
+            ))
+            . '"';
 
         $html = sprintf(
-            '<input name="%s" id="%s" value="%s" %s style="width:110px !important;" />'
-            .' <img src="%s" alt="" class="v-middle" id="%s_trig" title="%s" style="%s" />',
-            $this->getName(), $this->getHtmlId(), $this->_escape($this->getValue()), $this->serialize($this->getHtmlAttributes()),
-            $this->getImage(), $this->getHtmlId(), 'Select Date', ($this->getDisabled() ? 'display:none;' : '')
+            '<input name="%s" id="%s" value="%s" %s %s />',
+            $this->getName(),
+            $this->getHtmlId(),
+            $this->_escape($this->getValue()),
+            $this->serialize($this->getHtmlAttributes()),
+            $dataInit
         );
-        $outputFormat = $this->getFormat();
-        if (empty($outputFormat)) {
-            throw new Exception('Output format is not specified. Please, specify "format" key in constructor, or set it using setFormat().');
-        }
-        $displayFormat = Varien_Date::convertZendToStrFtime($outputFormat, true, (bool)$this->getTime());
-
-        $html .= sprintf('
-            <script type="text/javascript">
-            //<![CDATA[
-                Calendar.setup({
-                    inputField: "%s",
-                    ifFormat: "%s",
-                    showsTime: %s,
-                    button: "%s_trig",
-                    align: "Bl",
-                    singleClick : true
-                });
-            //]]>
-            </script>',
-            $this->getHtmlId(), $displayFormat,
-            $this->getTime() ? 'true' : 'false', $this->getHtmlId()
-        );
-
         $html .= $this->getAfterElementHtml();
-
         return $html;
     }
 }

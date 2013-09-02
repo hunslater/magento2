@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Page
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Page_Block_Html_BreadcrumbsTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_block = new Mage_Page_Block_Html_Breadcrumbs();
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
+        $this->_block = Mage::app()->getLayout()->createBlock('Mage_Page_Block_Html_Breadcrumbs');
     }
 
     public function testAddCrumb()
@@ -55,5 +50,28 @@ class Mage_Page_Block_Html_BreadcrumbsTest extends PHPUnit_Framework_TestCase
         $this->assertContains('test label', $html);
         $this->assertContains('test title', $html);
         $this->assertContains('test link', $html);
+    }
+
+    public function testGetCacheKeyInfo()
+    {
+        $crumbs = array(
+            'test' => array(
+                'label'    => 'test label',
+                'title'    => 'test title',
+                'link'     => 'test link',
+            )
+        );
+        foreach ($crumbs as $crumbName => &$crumb) {
+            $this->_block->addCrumb($crumbName, $crumb);
+            $crumb += array(
+                'first'    => null,
+                'last'     => null,
+                'readonly' => null,
+            );
+        }
+
+        $cacheKeyInfo = $this->_block->getCacheKeyInfo();
+        $crumbsFromCacheKey = unserialize(base64_decode($cacheKeyInfo['crumbs']));
+        $this->assertEquals($crumbs, $crumbsFromCacheKey);
     }
 }

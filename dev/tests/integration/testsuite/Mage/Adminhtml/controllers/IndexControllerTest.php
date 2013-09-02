@@ -21,27 +21,15 @@
  * @category    Mage
  * @package     Mage_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * @group module:Mage_Adminhtml
+ * @magentoAppArea adminhtml
  */
-class Mage_Adminhtml_IndexControllerTest extends Mage_Adminhtml_Utility_Controller
+class Mage_Adminhtml_IndexControllerTest extends Mage_Backend_Utility_Controller
 {
-    /**
-     * @covers Mage_Adminhtml_IndexController::changeLocaleAction
-     */
-    public function testChangeLocaleAction()
-    {
-        $expected = 'de_DE';
-        $this->getRequest()->setParam('locale', $expected);
-        $this->dispatch('backend/admin/index/changeLocale');
-        $actual = Mage::getSingleton('Mage_Backend_Model_Session')->getLocale();
-        $this->assertEquals($expected, $actual);
-    }
-
     /**
      * @covers Mage_Adminhtml_IndexController::globalSearchAction
      */
@@ -52,6 +40,6 @@ class Mage_Adminhtml_IndexControllerTest extends Mage_Adminhtml_Utility_Controll
         $this->dispatch('backend/admin/index/globalSearch');
 
         $actual = $this->getResponse()->getBody();
-        $this->assertStringEndsWith('</ul>', trim($actual));
+        $this->assertEquals(array(), json_decode($actual));
     }
 }

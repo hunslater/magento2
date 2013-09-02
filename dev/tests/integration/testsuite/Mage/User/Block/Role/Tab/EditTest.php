@@ -21,12 +21,12 @@
  * @category    Magento
  * @package     Mage_User
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * @group module:Mage_User
+ * @magentoAppArea adminhtml
  */
 class Mage_User_Block_Role_Tab_EditTest extends PHPUnit_Framework_TestCase
 {
@@ -37,30 +37,25 @@ class Mage_User_Block_Role_Tab_EditTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $roleAdmin = new Mage_User_Model_Role();
+        $roleAdmin = Mage::getModel('Mage_User_Model_Role');
         $roleAdmin->load(Magento_Test_Bootstrap::ADMIN_ROLE_NAME, 'role_name');
         Mage::app()->getRequest()->setParam('rid', $roleAdmin->getId());
 
-        $this->_block = new Mage_User_Block_Role_Tab_Edit();
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
+        $this->_block = Mage::getObjectManager()->create('Mage_User_Block_Role_Tab_Edit');
     }
 
     public function testConstructor()
     {
         $this->assertNotEmpty($this->_block->getSelectedResources());
-        $this->assertContains('all', $this->_block->getSelectedResources());
+        $this->assertContains(
+            'Mage_Adminhtml::all',
+            $this->_block->getSelectedResources()
+        );
     }
 
-    public function testGetResTreeJson()
+    public function testGetTree()
     {
-        $encodedTree = $this->_block->getResTreeJson();
+        $encodedTree = $this->_block->getTree();
         $this->assertNotEmpty($encodedTree);
-
-        $decodedTree = Mage::helper('Mage_Core_Helper_Data')->jsonDecode($encodedTree);
-        $this->assertNotEmpty($decodedTree);
     }
 }

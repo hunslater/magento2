@@ -21,12 +21,14 @@
  * @category    Magento
  * @package     Magento_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_Backend_Model_Url.
+ *
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Model_UrlTest extends PHPUnit_Framework_TestCase
 {
@@ -37,31 +39,27 @@ class Mage_Backend_Model_UrlTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Backend_Model_Url;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        parent::setUp();
+        $this->_model = Mage::getModel('Mage_Backend_Model_Url');
     }
 
     /**
      * @covers Mage_Backend_Model_Url::getSecure
      */
-    public function testGetSecure()
+    public function testIsSecure()
     {
         Mage::app()->getStore()->setConfig('web/secure/use_in_adminhtml', true);
-        $this->assertTrue($this->_model->getSecure());
+        $this->assertTrue($this->_model->isSecure());
 
         Mage::app()->getStore()->setConfig('web/secure/use_in_adminhtml', false);
-        $this->assertFalse($this->_model->getSecure());
+        $this->assertFalse($this->_model->isSecure());
 
         $this->_model->setData('secure_is_forced', true);
         $this->_model->setData('secure', true);
-        $this->assertTrue($this->_model->getSecure());
+        $this->assertTrue($this->_model->isSecure());
 
         $this->_model->setData('secure', false);
-        $this->assertFalse($this->_model->getSecure());
+        $this->assertFalse($this->_model->isSecure());
     }
 
     /**
@@ -100,7 +98,8 @@ class Mage_Backend_Model_UrlTest extends PHPUnit_Framework_TestCase
      */
     public function testGetSecretKey($routeName, $controller, $action, $expectedHash)
     {
-        $request = new Mage_Core_Controller_Request_Http;
+        /** @var $request Mage_Core_Controller_Request_Http */
+        $request = Mage::getModel('Mage_Core_Controller_Request_Http');
         $request->setControllerName('default_controller')
             ->setActionName('default_action')
             ->setRouteName('default_router');
@@ -134,7 +133,8 @@ class Mage_Backend_Model_UrlTest extends PHPUnit_Framework_TestCase
      */
     public function testGetSecretKeyForwarded()
     {
-        $request = new Mage_Core_Controller_Request_Http;
+        /** @var $request Mage_Core_Controller_Request_Http */
+        $request = Mage::getModel('Mage_Core_Controller_Request_Http');
         $request->setControllerName('controller')->setActionName('action');
         $request->initForward()->setControllerName(uniqid())->setActionName(uniqid());
         $this->_model->setRequest($request);

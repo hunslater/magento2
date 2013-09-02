@@ -21,28 +21,33 @@
  * @category    Magento
  * @package     Mage_Checkout
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_Checkout_MultishippingController
+ *
+ * @magentoAppArea frontend
  */
 class Mage_Checkout_MultishippingControllerTest extends Magento_Test_TestCase_ControllerAbstract
 {
     /**
-     * Covers app/code/core/Mage/Checkout/Block/Multishipping/Payment/Info.php
-     * and app/code/core/Mage/Checkout/Block/Multishipping/Overview.php
+     * Covers app/code/Mage/Checkout/Block/Multishipping/Payment/Info.php
+     * and app/code/Mage/Checkout/Block/Multishipping/Overview.php
      *
      * @magentoDataFixture Mage/Sales/_files/quote.php
      * @magentoDataFixture Mage/Customer/_files/customer.php
+     * @magentoConfigFixture current_store shipping/option/checkout_multiple 1
      */
     public function testOverviewAction()
     {
-        $quote = new Mage_Sales_Model_Quote();
+        /** @var $quote Mage_Sales_Model_Quote */
+        $quote = Mage::getModel('Mage_Sales_Model_Quote');
         $quote->load('test01', 'reserved_order_id');
         Mage::getSingleton('Mage_Checkout_Model_Session')->setQuoteId($quote->getId());
-        $session = new Mage_Customer_Model_Session;
+        /** @var $session Mage_Customer_Model_Session */
+        $session = Mage::getModel('Mage_Customer_Model_Session');
         $session->login('customer@example.com', 'password');
         $this->getRequest()->setPost('payment', array('method' => 'checkmo'));
         $this->dispatch('checkout/multishipping/overview');

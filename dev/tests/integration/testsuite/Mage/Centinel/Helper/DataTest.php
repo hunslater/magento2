@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Centinel
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -32,8 +32,10 @@ class Mage_Centinel_Helper_DataTest extends PHPUnit_Framework_TestCase
 {
     public function testGetInfoBlock()
     {
-        $block = new Mage_Payment_Helper_Data();
-        $paymentInfo = new Mage_Payment_Model_Info;
+        /** @var $block Mage_Payment_Helper_Data */
+        $block = Mage::helper('Mage_Payment_Helper_Data');
+        /** @var $paymentInfo Mage_Payment_Model_Info */
+        $paymentInfo = Mage::getModel('Mage_Payment_Model_Info');
         $paymentInfo->setMethod('checkmo');
         $result = $block->getInfoBlock($paymentInfo);
         $this->assertInstanceOf('Mage_Payment_Block_Info_Checkmo', $result);

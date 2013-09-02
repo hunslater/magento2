@@ -21,24 +21,28 @@
  * @category    Magento
  * @package     Mage_Payment
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * Test class for Mage_Payment_Block_Info_ContainerAbstract
+ */
 class Mage_Payment_Block_Info_ContainerAbstractTest extends PHPUnit_Framework_TestCase
 {
     public function testSetInfoTemplate()
     {
-        $block = $this->getMock('Mage_Payment_Block_Info_ContainerAbstract', array('getChildBlock', 'getPaymentInfo'));
-
-        $paymentInfo = new Mage_Payment_Model_Info;
-        $methodInstance = new Mage_Payment_Model_Method_Checkmo;
+        $block = $this->getMock('Mage_Payment_Block_Info_ContainerAbstract', array('getChildBlock', 'getPaymentInfo'),
+            array(), '', false);
+        $objectManagerHelper = new Magento_Test_Helper_ObjectManager($this);
+        $paymentInfo = $objectManagerHelper->getObject('Mage_Payment_Model_Info');
+        $methodInstance = $objectManagerHelper->getObject('Mage_Payment_Model_Method_Checkmo');
         $paymentInfo->setMethodInstance($methodInstance);
         $block->expects($this->atLeastOnce())
             ->method('getPaymentInfo')
             ->will($this->returnValue($paymentInfo));
 
-        $childBlock = new Mage_Core_Block_Template;
+        $childBlock = $objectManagerHelper->getObject('Mage_Core_Block_Template');
         $block->expects($this->atLeastOnce())
             ->method('getChildBlock')
             ->with('payment.info.checkmo')

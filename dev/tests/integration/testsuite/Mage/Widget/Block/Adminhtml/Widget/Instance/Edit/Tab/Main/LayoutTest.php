@@ -21,10 +21,14 @@
  * @category    Magento
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Tab_Main_LayoutTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -34,19 +38,23 @@ class Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Tab_Main_LayoutTest exten
 
     protected function setUp()
     {
-        $this->_block = new Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Tab_Main_Layout(array(
-            'widget_instance' => new Mage_Widget_Model_Widget_Instance()
-        ));
+        parent::setUp();
+
+        $this->_block = Mage::app()->getLayout()->createBlock(
+            'Mage_Widget_Block_Adminhtml_Widget_Instance_Edit_Tab_Main_Layout',
+            '',
+            array('data' => array('widget_instance' => Mage::getModel('Mage_Widget_Model_Widget_Instance')))
+        );
         $this->_block->setLayout(Mage::app()->getLayout());
     }
 
-    protected function tearDown()
-    {
-        $this->_block = null;
-    }
-
+    /**
+     * @magentoAppIsolation enabled
+     */
     public function testGetLayoutsChooser()
     {
+        Mage::getDesign()->setArea(Mage_Core_Model_App_Area::AREA_FRONTEND)->setDefaultDesignTheme();
+
         $actualHtml = $this->_block->getLayoutsChooser();
         $this->assertStringStartsWith('<select ', $actualHtml);
         $this->assertStringEndsWith('</select>', $actualHtml);

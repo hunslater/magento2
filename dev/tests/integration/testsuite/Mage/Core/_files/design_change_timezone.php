@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -35,7 +35,7 @@ $designChanges = array(
 );
 foreach ($designChanges as $designChangeData) {
     $storeId = Mage::app()->getStore($designChangeData['store'])->getId();
-    $change = new Mage_Core_Model_Design;
+    $change = Mage::getModel('Mage_Core_Model_Design');
     $change->setStoreId($storeId)
         ->setDesign($designChangeData['design'])
         ->setDateFrom($designChangeData['date'])

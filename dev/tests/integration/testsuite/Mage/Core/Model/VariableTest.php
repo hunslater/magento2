@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Core_Model_VariableTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Core_Model_Variable();
-    }
-
-    public function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Core_Model_Variable');
     }
 
     public function testGetSetStoreId()
@@ -56,7 +51,7 @@ class Mage_Core_Model_VariableTest extends PHPUnit_Framework_TestCase
         ));
         $this->_model->save();
 
-        $variable = new Mage_Core_Model_Variable();
+        $variable = Mage::getModel('Mage_Core_Model_Variable');
         $variable->loadByCode('test_code');
         $this->assertEquals($this->_model->getName(), $variable->getName());
         $this->_model->delete();

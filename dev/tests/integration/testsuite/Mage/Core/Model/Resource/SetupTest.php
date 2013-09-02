@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,9 @@ class Mage_Core_Model_Resource_SetupTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Core_Model_Resource_Setup('default_setup');
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getResourceModel('Mage_Core_Model_Resource_Setup',
+            array('resourceName' => 'default_setup')
+        );
     }
 
     public function testSetTable()
@@ -48,10 +45,6 @@ class Mage_Core_Model_Resource_SetupTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('test_real_name', $this->_model->getTable('test_name'));
     }
 
-    /**
-     * @covers Mage_Core_Model_Resource_Setup::applyAllUpdates
-     * @covers Mage_Core_Model_Resource_Setup::applyAllDataUpdates
-     */
     public function testApplyAllDataUpdates()
     {
         /*reset versions*/
@@ -59,9 +52,12 @@ class Mage_Core_Model_Resource_SetupTest extends PHPUnit_Framework_TestCase
         Mage::getResourceModel('Mage_Core_Model_Resource_Resource')->setDataVersion('adminnotification_setup', false);
         $this->_model->deleteTableRow('core_resource', 'code', 'adminnotification_setup');
         $this->_model->getConnection()->dropTable($this->_model->getTable('adminnotification_inbox'));
+        $this->_model->getConnection()->dropTable($this->_model->getTable('admin_system_messages'));
+        /** @var $updater Mage_Core_Model_Db_Updater */
+        $updater = Mage::getSingleton('Mage_Core_Model_Db_Updater');
         try {
-            $this->_model->applyAllUpdates();
-            $this->_model->applyAllDataUpdates();
+            $updater->updateScheme();
+            $updater->updateData();
         } catch (Exception $e) {
             $this->fail("Impossible to continue other tests, because database is broken: {$e}");
         }

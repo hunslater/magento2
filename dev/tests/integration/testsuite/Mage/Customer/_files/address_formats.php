@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Customer
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -62,5 +62,5 @@ $configXml = <<<EOD
 </config>
 EOD;
 
-$config = new Mage_Core_Model_Config_Base($configXml);
-Mage::getConfig()->extend($config);
+$config = Mage::getModel('Mage_Core_Model_Config_Base', array('sourceData' => $configXml));
+Mage::getConfig()->getNode()->extend($config->getNode());

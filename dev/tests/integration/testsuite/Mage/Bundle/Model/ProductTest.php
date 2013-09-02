@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -38,13 +38,8 @@ class Mage_Bundle_Model_ProductTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product');
         $this->_model->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_BUNDLE);
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testGetTypeId()
@@ -60,22 +55,23 @@ class Mage_Bundle_Model_ProductTest extends PHPUnit_Framework_TestCase
         $this->assertSame($typeInstance, $this->_model->getTypeInstance());
 
         // singleton getter
-        $otherProduct = new Mage_Catalog_Model_Product;
+        $otherProduct = Mage::getModel('Mage_Catalog_Model_Product');
         $otherProduct->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_BUNDLE);
         $this->assertSame($typeInstance, $otherProduct->getTypeInstance());
 
         // model setter
-        $customTypeInstance = new Mage_Bundle_Model_Product_Type;
+        $customTypeInstance = Mage::getModel('Mage_Bundle_Model_Product_Type');
         $this->_model->setTypeInstance($customTypeInstance);
         $this->assertSame($customTypeInstance, $this->_model->getTypeInstance());
     }
 
     /**
+     * @magentoDbIsolation enabled
      * @magentoAppIsolation enabled
      */
     public function testCRUD()
     {
-        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID));
+        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_AppInterface::ADMIN_STORE_ID));
         $this->_model->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_BUNDLE)
             ->setAttributeSetId(4)
             ->setName('Bundle Product')->setSku(uniqid())->setPrice(10)

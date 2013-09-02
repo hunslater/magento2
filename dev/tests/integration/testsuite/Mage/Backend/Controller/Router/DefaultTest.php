@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Backend_Controller_Router_DefaultTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -39,24 +42,20 @@ class Mage_Backend_Controller_Router_DefaultTest extends PHPUnit_Framework_TestC
 
     protected function setUp()
     {
-        $options = array(
-            'area' => Mage::helper('Mage_Backend_Helper_Data')->getAreaCode(),
-            'base_controller' => 'Mage_Backend_Controller_ActionAbstract',
-            'frontName' => 'backend'
-        );
-        $this->_frontMock = $this->getMock('Mage_Core_Controller_Varien_Front');
-        $this->_model = new Mage_Backend_Controller_Router_Default($options);
-        $this->_model->setFront($this->_frontMock);
-    }
+        parent::setUp();
 
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $options = array(
+            'areaCode'        => Mage::helper('Mage_Backend_Helper_Data')->getAreaCode(),
+            'baseController'  => 'Mage_Backend_Controller_ActionAbstract',
+        );
+        $this->_frontMock = $this->getMock('Mage_Core_Controller_Varien_Front', array(), array(), '', false);
+        $this->_model = Mage::getModel('Mage_Backend_Controller_Router_Default', $options);
+        $this->_model->setFront($this->_frontMock);
     }
 
     public function testRouterCannotProcessRequestsWithWrongFrontName()
     {
-        $request = $this->getMock('Mage_Core_Controller_Request_Http');
+        $request = $this->getMock('Mage_Core_Controller_Request_Http', array(), array(), '', false);
         $request->expects($this->once())
             ->method('getPathInfo')
             ->will($this->returnValue('frontend/admin/dashboard'));
@@ -67,7 +66,7 @@ class Mage_Backend_Controller_Router_DefaultTest extends PHPUnit_Framework_TestC
 
     public function testRouterCanProcessRequestsWithProperFrontName()
     {
-        $request = $this->getMock('Mage_Core_Controller_Request_Http');
+        $request = $this->getMock('Mage_Core_Controller_Request_Http', array(), array(), '', false);
         $request->expects($this->once())
             ->method('getPathInfo')
             ->will($this->returnValue('backend/admin/dashboard'));

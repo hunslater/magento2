@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -54,11 +54,11 @@ class Varien_Data_Form_Element_Multiselect extends Varien_Data_Form_Element_Abst
     {
         $this->addClass('select multiselect');
         $html = '';
-        if ($this->getCanBeEmpty() && empty($this->_data['disabled'])) {
+        if ($this->getCanBeEmpty()) {
             $html .= '<input type="hidden" name="' . parent::getName() . '" value="" />';
         }
         $html .= '<select id="' . $this->getHtmlId() . '" name="' . $this->getName() . '" ' .
-            $this->serialize($this->getHtmlAttributes()) . ' multiple="multiple">' . "\n";
+            $this->serialize($this->getHtmlAttributes()) . $this->_getUiId() . ' multiple="multiple">' . "\n";
 
         $value = $this->getValue();
         if (!is_array($value)) {

@@ -21,13 +21,10 @@
  * @category    Magento
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-/**
- * @group integrity
- */
 class Integrity_Mage_Widget_SkinFilesTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -35,7 +32,12 @@ class Integrity_Mage_Widget_SkinFilesTest extends PHPUnit_Framework_TestCase
      */
     public function testWidgetPlaceholderImages($skinImage)
     {
-        $this->assertFileExists(Mage::getDesign()->getSkinFile($skinImage, array('area' => 'adminhtml')));
+        $this->assertFileExists(
+            Mage::getObjectmanager()->get('Mage_Core_Model_View_FileSystem')->getViewFile(
+                $skinImage,
+                array('area' => 'adminhtml')
+            )
+        );
     }
 
     /**
@@ -44,9 +46,11 @@ class Integrity_Mage_Widget_SkinFilesTest extends PHPUnit_Framework_TestCase
     public function widgetPlaceholderImagesDataProvider()
     {
         $result = array();
-        $model = new Mage_Widget_Model_Widget;
+        /** @var $model Mage_Widget_Model_Widget */
+        $model = Mage::getModel('Mage_Widget_Model_Widget');
         foreach ($model->getWidgetsArray() as $row) {
-            $instance = new Mage_Widget_Model_Widget_Instance;
+            /** @var $instance Mage_Widget_Model_Widget_Instance */
+            $instance = Mage::getModel('Mage_Widget_Model_Widget_Instance');
             $config = $instance->setType($row['type'])->getWidgetConfig();
             // @codingStandardsIgnoreStart
             if (isset($config->placeholder_image)) {

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,7 +33,7 @@ class Mage_Core_Model_TemplateTest extends PHPUnit_Framework_TestCase
      */
     public function testSetDesignConfigException($config)
     {
-        $model = new Mage_Core_Model_Email_Template; // Mage_Core_Model_Template is an abstract class
+        $model = Mage::getModel('Mage_Core_Model_Email_Template'); // Mage_Core_Model_Template is an abstract class
         $model->setDesignConfig($config);
     }
 

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -79,7 +79,10 @@ class Magento_Test_EntityTest extends PHPUnit_Framework_TestCase
 
         $this->_model = $this->getMock(
             'Mage_Core_Model_Abstract',
-            array('load', 'save', 'delete', 'getIdFieldName')
+            array('load', 'save', 'delete', 'getIdFieldName', '__wakeup'),
+            array(),
+            '',
+            false
         );
 
         $this->_model->expects($this->atLeastOnce())

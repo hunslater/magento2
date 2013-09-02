@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Review
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -49,6 +49,7 @@ class Mage_Review_Helper_Action_PagerTest extends PHPUnit_Framework_TestCase
 
         $this->_helper = $this->getMockBuilder('Mage_Review_Helper_Action_Pager')
             ->setMethods(array('_getSession'))
+            ->disableOriginalConstructor()
             ->getMock();
         $this->_helper->expects($this->any())
             ->method('_getSession')

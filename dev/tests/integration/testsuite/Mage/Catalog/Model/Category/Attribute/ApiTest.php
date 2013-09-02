@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,12 +37,7 @@ class Mage_Catalog_Model_Category_Attribute_ApiTest extends PHPUnit_Framework_Te
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Category_Attribute_Api;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Category_Attribute_Api');
     }
 
     public function testItems()

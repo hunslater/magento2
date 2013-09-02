@@ -21,12 +21,12 @@
  * @category    Magento
  * @package     Mage_ImportExport
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 $customers = array();
 
-$customer = new Mage_Customer_Model_Customer();
+$customer = Mage::getModel('Mage_Customer_Model_Customer');
 
 $customer->setWebsiteId(1)
     ->setEntityId(1)
@@ -45,7 +45,7 @@ $customer->isObjectNew(true);
 $customer->save();
 $customers[] = $customer;
 
-$customer = new Mage_Customer_Model_Customer();
+$customer = Mage::getModel('Mage_Customer_Model_Customer');
 $customer->setWebsiteId(1)
     ->setEntityId(2)
     ->setEntityTypeId(1)
@@ -63,7 +63,7 @@ $customer->isObjectNew(true);
 $customer->save();
 $customers[] = $customer;
 
-$customer = new Mage_Customer_Model_Customer();
+$customer = Mage::getModel('Mage_Customer_Model_Customer');
 $customer->setWebsiteId(1)
     ->setEntityId(3)
     ->setEntityTypeId(1)
@@ -81,4 +81,5 @@ $customer->isObjectNew(true);
 $customer->save();
 $customers[] = $customer;
 
+Mage::unregister('_fixture/Mage_ImportExport_Customer_Collection');
 Mage::register('_fixture/Mage_ImportExport_Customer_Collection', $customers);

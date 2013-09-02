@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Adminhtml_Controller_ActionTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -34,20 +37,17 @@ class Mage_Adminhtml_Controller_ActionTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        $arguments = array(
+            'request' => new Magento_Test_Request(),
+            'response' => new Magento_Test_Response(),
+        );
         $this->_model = $this->getMockForAbstractClass(
             'Mage_Adminhtml_Controller_Action',
-            array(new Magento_Test_Request(), new Magento_Test_Response())
+            array(
+                'context'         => Mage::getObjectManager()->create('Mage_Backend_Controller_Context', $arguments),
+                'areaCode'        => 'adminhtml'
+            )
         );
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
-    }
-
-    public function testConstruct()
-    {
-        $this->assertInstanceOf('Mage_Backend_Controller_ActionAbstract', $this->_model);
     }
 
     /**

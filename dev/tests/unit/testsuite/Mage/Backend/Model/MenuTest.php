@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,7 +33,7 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
     protected $_model;
 
     /**
-     * @var Mage_Backend_Model_Menu_Logger
+     * @var Mage_Core_Model_Logger
      */
     protected $_logger;
 
@@ -53,9 +53,9 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
         $this->_items['item3'] = $this->getMock('Mage_Backend_Model_Menu_Item', array(), array(), '', false);
         $this->_items['item3']->expects($this->any())->method('getId')->will($this->returnValue('item3'));
 
-        $this->_logger = $this->getMock('Mage_Backend_Model_Menu_Logger');
+        $this->_logger = $this->getMock('Mage_Core_Model_Logger', array('log'), array(), '', false);
 
-        $this->_model = new Mage_Backend_Model_Menu(array('logger' => $this->_logger));
+        $this->_model = new Mage_Backend_Model_Menu($this->_logger);
     }
 
     public function testAdd()
@@ -76,7 +76,7 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
 
     public function testAddToItem()
     {
-        $subMenu = $this->getMock("Mage_Backend_Model_Menu", array(), array(array('logger' => $this->_logger)));
+        $subMenu = $this->getMock("Mage_Backend_Model_Menu", array(), array($this->_logger));
         $subMenu->expects($this->once())
             ->method("add")
             ->with($this->_items['item2']);
@@ -128,8 +128,8 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
 
     public function testGetRecursive()
     {
-        $menu1 = new Mage_Backend_Model_Menu(array('logger' => $this->_logger));
-        $menu2 = new Mage_Backend_Model_Menu(array('logger' => $this->_logger));
+        $menu1 = new Mage_Backend_Model_Menu($this->_logger);
+        $menu2 = new Mage_Backend_Model_Menu($this->_logger);
 
         $this->_items['item1']->expects($this->any())->method('hasChildren')->will($this->returnValue(true));
         $this->_items['item1']->expects($this->any())->method('getChildren')->will($this->returnValue($menu1));
@@ -243,7 +243,7 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
     {
         $this->_logger->expects($this->any())->method('log');
 
-        $subMenu = new Mage_Backend_Model_Menu(array('logger' => $this->_logger));
+        $subMenu = new Mage_Backend_Model_Menu($this->_logger);
 
         $this->_items['item1']->expects($this->any())
             ->method("hasChildren")
@@ -274,21 +274,9 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->_model->isLast($this->_items['item3']));
     }
 
-    public function testSetPathUpdatesAllChildren()
-    {
-        $this->_items['item1']->expects($this->exactly(2))->method('setPath');
-        $this->_model->add($this->_items['item1']);
-
-        $this->_items['item2']->expects($this->exactly(2))->method('setPath');
-        $this->_model->add($this->_items['item2']);
-
-        $this->_model->setpath('root');
-    }
-
     public function testGetFirstAvailableReturnsLeafNode()
     {
         $item = $this->getMock('Mage_Backend_Model_Menu_Item', array(), array(), '', false);
-        $item->expects($this->once())->method('setPath');
         $item->expects($this->never())->method('getFirstAvailable');
         $this->_model->add($item);
 
@@ -359,5 +347,12 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
             }
         }
         $this->assertEquals($expected, $actual);
+    }
+
+    public function testSerialize()
+    {
+        $this->assertNotEmpty($this->_model->serialize());
+        $this->_logger->expects($this->once())->method('log');
+        $this->_model->add($this->_items['item1']);
     }
 }

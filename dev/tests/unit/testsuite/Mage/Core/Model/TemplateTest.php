@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,10 +39,19 @@ class Mage_Core_Model_TemplateTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = $this->getMockForAbstractClass('Mage_Core_Model_Template', array(array(
-            'area' => Mage_Core_Model_App_Area::AREA_FRONTEND,
-            'store' => 1
-        )));
+        $helper = new Magento_Test_Helper_ObjectManager($this);
+        $this->_model = $this->getMockForAbstractClass(
+            'Mage_Core_Model_Template',
+            $helper->getConstructArguments(
+                'Mage_Core_Model_Template',
+                array(
+                    'data' => array(
+                        'area' => Mage_Core_Model_App_Area::AREA_FRONTEND,
+                        'store' => 1
+                    )
+                )
+            )
+        );
     }
 
     /**

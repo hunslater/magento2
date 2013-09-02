@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,8 +29,11 @@ class Mage_Catalog_Block_Product_List_ToolbarTest extends PHPUnit_Framework_Test
 {
     public function testGetPagerHtml()
     {
-        $layout = new Mage_Core_Model_Layout;
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
+        /** @var $block Mage_Catalog_Block_Product_List_Toolbar */
         $block = $layout->createBlock('Mage_Catalog_Block_Product_List_Toolbar', 'block');
+        /** @var $childBlock Mage_Core_Block_Text */
         $childBlock = $layout->addBlock('Mage_Core_Block_Text', 'product_list_toolbar_pager', 'block');
 
         $expectedHtml = '<b>Any text there</b>';

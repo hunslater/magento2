@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -31,7 +31,7 @@ class Mage_Catalog_Block_Layer_ViewTest extends PHPUnit_Framework_TestCase
     {
         $childBlock = new Varien_Object;
 
-        $block = $this->getMock('Mage_Catalog_Block_Layer_View', array('getChildBlock'));
+        $block = $this->getMock('Mage_Catalog_Block_Layer_View', array('getChildBlock'), array(), '', false);
         $block->expects($this->atLeastOnce())
             ->method('getChildBlock')
             ->with('layer_state')

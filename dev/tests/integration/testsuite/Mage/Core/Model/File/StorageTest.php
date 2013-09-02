@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,7 +34,7 @@ class Mage_Core_Model_File_StorageTest extends PHPUnit_Framework_TestCase
      */
     public function testGetScriptConfig()
     {
-        $config = Mage_Core_Model_File_Storage::getScriptConfig();
+        $config = Mage::getModel('Mage_Core_Model_File_Storage')->getScriptConfig();
         $this->assertInternalType('array', $config);
         $this->assertArrayHasKey('media_directory', $config);
         $this->assertArrayHasKey('allowed_resources', $config);
@@ -44,7 +44,7 @@ class Mage_Core_Model_File_StorageTest extends PHPUnit_Framework_TestCase
         $this->assertContains('css', $config['allowed_resources']);
         $this->assertContains('css_secure', $config['allowed_resources']);
         $this->assertContains('js', $config['allowed_resources']);
-        $this->assertContains('skin', $config['allowed_resources']);
+        $this->assertContains('theme', $config['allowed_resources']);
         $this->assertEquals(1000, $config['update_time']);
     }
 }

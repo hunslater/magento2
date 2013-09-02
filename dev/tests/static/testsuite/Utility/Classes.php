@@ -22,7 +22,7 @@
  *
  * @category    tests
  * @package     static
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -53,7 +53,7 @@ class Utility_Classes
     }
 
     /**
-     * Get XML node text values or values of specified attribute using specified xPath
+     * Get XML node text values using specified xPath
      *
      * The node must contain specified attribute
      *
@@ -67,6 +67,23 @@ class Utility_Classes
         $nodes = $xml->xpath($xPath) ?: array();
         foreach ($nodes as $node) {
             $result[] = (string)$node;
+        }
+        return $result;
+    }
+
+    /**
+     * Get XML node names using specified xPath
+     *
+     * @param SimpleXMLElement $xml
+     * @param string $xpath
+     * @return array
+     */
+    public static function getXmlNodeNames(SimpleXMLElement $xml, $xpath)
+    {
+        $result = array();
+        $nodes = $xml->xpath($xpath) ?: array();
+        foreach ($nodes as $node) {
+            $result[] = $node->getName();
         }
         return $result;
     }
@@ -115,13 +132,12 @@ class Utility_Classes
         $classes = self::getXmlNodeValues($xml, '
             /config//resource_adapter | /config/*[not(name()="sections")]//class | //model
                 | //backend_model | //source_model | //price_model | //model_token | //writer_model | //clone_model
-                | //frontend_model | //working_model | //admin_renderer | //renderer'
+                | //frontend_model | //working_model | //admin_renderer | //renderer | /config/*/di/preferences/*'
         );
         $classes = array_merge($classes, self::getXmlAttributeValues($xml, '//@backend_model', 'backend_model'));
-        $nodes = $xml->xpath('/logging/*/expected_models/* | /logging/*/actions/*/expected_models/*') ?: array();
-        foreach ($nodes as $node) {
-            $classes[] = $node->getName();
-        }
+        $classes = array_merge($classes, self::getXmlNodeNames($xml,
+            '/logging/*/expected_models/* | /logging/*/actions/*/expected_models/* | /config/*/di/preferences/*'
+        ));
 
         $classes = array_map(array('Utility_Classes', 'getCallbackClass'), $classes);
         $classes = array_map('trim', $classes);
@@ -148,7 +164,7 @@ class Utility_Classes
                     or @method="addPriceBlockType" or @method="addMergeSettingsBlockType"
                     or @method="addInformationRenderer" or @method="addOptionRenderer" or @method="addRowItemRender"
                     or @method="addDatabaseBlock"]/*[2]
-                | /layout//action[@method="setMassactionBlockName" or @method="addProductConfigurationHelper"]/name
+                | /layout//action[@method="setMassactionBlockName"]/name
                 | /layout//action[@method="setEntityModelClass"]/code'
         ));
         return array_unique($classes);
@@ -166,7 +182,7 @@ class Utility_Classes
     public static function collectModuleClasses($subTypePattern = '[A-Za-z]+')
     {
         $pattern = '/^' . preg_quote(Utility_Files::init()->getPathToSource(), '/')
-            . '\/app\/code\/[a-z]+\/([A-Za-z]+)\/([A-Za-z]+)\/(' . $subTypePattern . '\/.+)\.php$/';
+            . '\/app\/code\/([A-Za-z]+)\/([A-Za-z]+)\/(' . $subTypePattern . '\/.+)\.php$/';
         $result = array();
         foreach (Utility_Files::init()->getPhpFiles(true, false, false, false) as $file) {
             if (preg_match($pattern, $file, $matches)) {

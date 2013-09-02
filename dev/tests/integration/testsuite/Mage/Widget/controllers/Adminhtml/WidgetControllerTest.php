@@ -21,11 +21,14 @@
  * @category    Mage
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-class Mage_Widget_Adminhtml_WidgetControllerTest extends Mage_Adminhtml_Utility_Controller
+/**
+ * @magentoAppArea adminhtml
+ */
+class Mage_Widget_Adminhtml_WidgetControllerTest extends Mage_Backend_Utility_Controller
 {
     /**
      * Partially covers Mage_Widget_Block_Adminhtml_Widget_Options::_addField()
@@ -35,6 +38,8 @@ class Mage_Widget_Adminhtml_WidgetControllerTest extends Mage_Adminhtml_Utility_
         $this->getRequest()->setPost('widget', '{"widget_type":"Mage_Cms_Block_Widget_Page_Link","values":{}}');
         $this->dispatch('backend/admin/widget/loadOptions');
         $output = $this->getResponse()->getBody();
-        $this->assertRegExp('/<label for="options_fieldset[a-z\d]+_page_id">CMS Page/', $output);
+        //searching for label with text "CMS Page"
+        $this->assertContains('data-ui-id="wysiwyg-widget-options-fieldset-element-label-parameters-page-id-label" >'
+            . '<span>CMS Page', $output);
     }
 }

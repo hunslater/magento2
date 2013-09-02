@@ -21,40 +21,16 @@
  * @category    Magento
  * @package     Mage_ImportExport
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-/**
- * @group module:Mage_ImportExport
- */
 class Mage_ImportExport_Model_Export_Entity_ProductTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @var Mage_ImportExport_Model_Export_Entity_Product
      */
     protected $_model;
-
-    /**
-     * Store old display_errors ini option value here
-     *
-     * @var int
-     */
-    protected $_oldDisplayErrors;
-
-    /**
-     * Store old error_reporting ini option value here
-     *
-     * @var int
-     */
-    protected $_oldErrorLevel;
-
-    /**
-     * Store old isDeveloperMode value here
-     *
-     * @var boolean
-     */
-    protected $_oldIsDeveloperMode;
 
     /**
      * Stock item attributes which must be exported
@@ -88,38 +64,15 @@ class Mage_ImportExport_Model_Export_Entity_ProductTest extends PHPUnit_Framewor
     {
         parent::setUp();
 
-        $this->_model = new Mage_ImportExport_Model_Export_Entity_Product();
-
-        $this->_oldDisplayErrors  = ini_get('display_errors');
-        $this->_oldErrorLevel = error_reporting();
-        $this->_oldIsDeveloperMode = Mage::getIsDeveloperMode();
-    }
-
-    protected function tearDown()
-    {
-        ini_set('display_errors', $this->_oldDisplayErrors);
-        error_reporting($this->_oldErrorLevel);
-        Mage::setIsDeveloperMode($this->_oldIsDeveloperMode);
-        unset($this->_model);
-
-        parent::tearDown();
+        $this->_model = Mage::getModel('Mage_ImportExport_Model_Export_Entity_Product');
     }
 
     /**
-     * Test that there is no notice in _updateDataWithCategoryColumns()
-     *
-     * @covers Mage_ImportExport_Model_Export_Entity_Product::_updateDataWithCategoryColumns
-     *
      * @magentoDataFixture Mage/ImportExport/_files/product.php
      */
     public function testExport()
     {
-        // we have to set strict error reporting mode and enable mage developer mode to convert notice to exception
-        error_reporting(E_ALL | E_STRICT);
-        ini_set('display_errors', 1);
-        Mage::setIsDeveloperMode(true);
-
-        $this->_model->setWriter(new Mage_ImportExport_Model_Export_Adapter_Csv());
+        $this->_model->setWriter(Mage::getModel('Mage_ImportExport_Model_Export_Adapter_Csv'));
         $this->assertNotEmpty($this->_model->export());
     }
 
@@ -157,7 +110,6 @@ class Mage_ImportExport_Model_Export_Entity_ProductTest extends PHPUnit_Framewor
      * Verify header columns (that stock item attributes column headers are present)
      *
      * @param array $headerColumns
-     * @return void
      */
     public function verifyHeaderColumns(array $headerColumns)
     {
@@ -172,7 +124,6 @@ class Mage_ImportExport_Model_Export_Entity_ProductTest extends PHPUnit_Framewor
      * Verify row data (stock item attribute values)
      *
      * @param array $rowData
-     * @return void
      */
     public function verifyRow(array $rowData)
     {

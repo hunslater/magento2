@@ -1,5 +1,9 @@
 <?php
 /**
+ * Obsolete class attributes
+ *
+ * Format: array(<attribute_name>[, <class_scope> = ''[, <replacement>]])
+ *
  * Magento
  *
  * NOTICE OF LICENSE
@@ -18,53 +22,62 @@
  * versions in the future. If you wish to customize Magento for your
  * needs please refer to http://www.magentocommerce.com for more information.
  *
- * @category    tests
- * @package     static
- * @subpackage  Legacy
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 return array(
-    '_anonSuffix',
-    '_isAnonymous',
-    'decoratedIsFirst' => array('suggestion' => 'getDecoratedIsFirst'),
-    'decoratedIsEven' => array('suggestion' => 'getDecoratedIsEven'),
-    'decoratedIsOdd' => array('suggestion' => 'getDecoratedIsOdd'),
-    'decoratedIsLast' => array('suggestion' => 'getDecoratedIsLast'),
-    '_alias' => array('class_scope' => 'Mage_Core_Block_Abstract'),
-    '_children' => array('class_scope' => 'Mage_Core_Block_Abstract'),
-    '_childrenHtmlCache' => array('class_scope' => 'Mage_Core_Block_Abstract'),
-    '_childGroups' => array('class_scope' => 'Mage_Core_Block_Abstract'),
-    '_currencyNameTable',
-    '_combineHistory',
-    '_searchTextFields',
-    '_skipFieldsByModel',
-    '_imageFields' => array('class_scope' => 'Mage_Catalog_Model_Convert_Adapter_Product'),
-    '_parent' => array('class_scope' => 'Mage_Core_Block_Abstract'),
-    '_parentBlock' => array('class_scope' => 'Mage_Core_Block_Abstract'),
-    '_setAttributes' => array('class_scope' => 'Mage_Catalog_Model_Product_Type_Abstract'),
-    '_storeFilter' => array('class_scope' => 'Mage_Catalog_Model_Product_Type_Abstract'),
-    '_addMinimalPrice' => array('class_scope' => 'Mage_Catalog_Model_Resource_Product_Collection'),
-    '_checkedProductsQty' => array('class_scope' => 'Mage_CatalogInventory_Model_Observer'),
-    '_baseDirCache' => array('class_scope' => 'Mage_Core_Model_Config'),
-    '_customEtcDir' => array('class_scope' => 'Mage_Core_Model_Config'),
-    'static' => array('class_scope' => 'Mage_Core_Model_Email_Template_Filter'),
-    '_loadDefault' => array('class_scope' => 'Mage_Core_Model_Resource_Store_Collection'),
-    '_loadDefault' => array('class_scope' => 'Mage_Core_Model_Resource_Store_Group_Collection'),
-    '_loadDefault' => array('class_scope' => 'Mage_Core_Model_Resource_Website_Collection'),
-    '_addresses' => array('class_scope' => 'Mage_Customer_Model_Customer'),
-    '_currency' => array('class_scope' => 'Mage_GoogleCheckout_Model_Api_Xml_Checkout'),
-    '_saveTemplateFlag' => array('class_scope' => 'Mage_Newsletter_Model_Queue'),
-    '_ratingOptionTable' => array('class_scope' => 'Mage_Rating_Model_Resource_Rating_Option_Collection'),
-    '_entityTypeIdsToTypes',
-    '_entityIdsToIncrementIds',
-    '_isFirstTimeProcessRun' => array('class_scope' => 'Mage_SalesRule_Model_Validator'),
-    '_shipTable' => array('class_scope' => 'Mage_Shipping_Model_Resource_Carrier_Tablerate_Collection'),
-    '_designProductSettingsApplied',
-    '_order' => array('class_scope' => 'Mage_Checkout_Block_Onepage_Success'),
-    '_track_id',
-    '_order_id',
-    '_ship_id',
-    '_sortedChildren',
-    '_sortInstructions',
+    array('_addresses', 'Mage_Customer_Model_Customer'),
+    array('_addMinimalPrice', 'Mage_Catalog_Model_Resource_Product_Collection'),
+    array('_alias', 'Mage_Core_Block_Abstract'),
+    array('_anonSuffix'),
+    array('_baseDirCache', 'Mage_Core_Model_Config'),
+    array('_cacheConf'),
+    array('_canUseLocalModules'),
+    array('_checkedProductsQty', 'Mage_CatalogInventory_Model_Observer'),
+    array('_children', 'Mage_Core_Block_Abstract'),
+    array('_childrenHtmlCache', 'Mage_Core_Block_Abstract'),
+    array('_childGroups', 'Mage_Core_Block_Abstract'),
+    array('_combineHistory'),
+    array('_config', 'Mage_Core_Model_Design_Package'),
+    array('_config', 'Mage_Core_Model_Logger', '_dirs'),
+    array('_configuration', 'Mage_Index_Model_Lock_Storage', '_dirs'),
+    array('_currency', 'Mage_GoogleCheckout_Model_Api_Xml_Checkout'),
+    array('_currencyNameTable'),
+    array('_customEtcDir', 'Mage_Core_Model_Config'),
+    array('_designProductSettingsApplied'),
+    array('_distroServerVars'),
+    array('_entityIdsToIncrementIds'),
+    array('_entityTypeIdsToTypes'),
+    array('_isAnonymous'),
+    array('_isFirstTimeProcessRun', 'Mage_SalesRule_Model_Validator'),
+    array('_loadDefault', 'Mage_Core_Model_Resource_Store_Collection'),
+    array('_loadDefault', 'Mage_Core_Model_Resource_Store_Group_Collection'),
+    array('_loadDefault', 'Mage_Core_Model_Resource_Website_Collection'),
+    array('_option', 'Mage_Captcha_Helper_Data', '_dirs'),
+    array('_options', 'Mage_Core_Model_Config', 'Mage_Core_Model_Dir'),
+    array('_optionsMapping', null, 'Mage::getBaseDir($nodeKey)'),
+    array('_order', 'Mage_Checkout_Block_Onepage_Success'),
+    array('_order_id'),
+    array('_parent', 'Mage_Core_Block_Abstract'),
+    array('_parentBlock', 'Mage_Core_Block_Abstract'),
+    array('_persistentCustomerGroupId'),
+    array('_ratingOptionTable', 'Mage_Rating_Model_Resource_Rating_Option_Collection'),
+    array('_saveTemplateFlag', 'Mage_Newsletter_Model_Queue'),
+    array('_searchTextFields'),
+    array('_setAttributes', 'Mage_Catalog_Model_Product_Type_Abstract'),
+    array('_skipFieldsByModel'),
+    array('_ship_id'),
+    array('_shipTable', 'Mage_Shipping_Model_Resource_Carrier_Tablerate_Collection'),
+    array('_sortedChildren'),
+    array('_sortInstructions'),
+    array('_storeFilter', 'Mage_Catalog_Model_Product_Type_Abstract'),
+    array('_substServerVars'),
+    array('_track_id'),
+    array('_varSubFolders', null, 'Mage_Core_Model_Dir'),
+    array('_viewDir', 'Mage_Core_Block_Template', '_dirs'),
+    array('decoratedIsFirst', null, 'getDecoratedIsFirst'),
+    array('decoratedIsEven', null, 'getDecoratedIsEven'),
+    array('decoratedIsOdd', null, 'getDecoratedIsOdd'),
+    array('decoratedIsLast', null, 'getDecoratedIsLast'),
+    array('static', 'Mage_Core_Model_Email_Template_Filter'),
 );

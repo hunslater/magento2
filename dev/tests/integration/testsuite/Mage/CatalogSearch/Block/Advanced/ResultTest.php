@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_CatalogSearch
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,14 +39,8 @@ class Mage_CatalogSearch_Block_Advanced_ResultTest extends PHPUnit_Framework_Tes
 
     protected function setUp()
     {
-        $this->_layout = new Mage_Core_Model_Layout;
+        $this->_layout = Mage::getModel('Mage_Core_Model_Layout');
         $this->_block = $this->_layout->createBlock('Mage_CatalogSearch_Block_Advanced_Result', 'block');
-    }
-
-    protected function tearDown()
-    {
-        $this->_layout = null;
-        $this->_block = null;
     }
 
     /**
@@ -59,11 +53,13 @@ class Mage_CatalogSearch_Block_Advanced_ResultTest extends PHPUnit_Framework_Tes
             'position' => 'Label Position',
             'option3' => 'Label Option 2'
         );
-        $category = $this->getMock('Mage_Catalog_Model_Category', array('getAvailableSortByOptions'));
+        $category = $this->getMock(
+            'Mage_Catalog_Model_Category', array('getAvailableSortByOptions'), array(), '', false
+        );
         $category->expects($this->atLeastOnce())
             ->method('getAvailableSortByOptions')
             ->will($this->returnValue($sortOptions));
-        $category->setId(rand(1, 1000)); // Any id - just for layer navigation
+        $category->setId(100500); // Any id - just for layer navigation
         Mage::getSingleton('Mage_Catalog_Model_Layer')->setCurrentCategory($category);
 
         $childBlock = $this->_layout->addBlock('Mage_Core_Block_Text', 'search_result_list', 'block');
@@ -79,6 +75,7 @@ class Mage_CatalogSearch_Block_Advanced_ResultTest extends PHPUnit_Framework_Tes
 
     public function testSetListModes()
     {
+        /** @var $childBlock Mage_Core_Block_Text */
         $childBlock = $this->_layout->addBlock('Mage_Core_Block_Text', 'search_result_list', 'block');
         $this->assertEmpty($childBlock->getModes());
         $this->_block->setListModes();
@@ -87,6 +84,7 @@ class Mage_CatalogSearch_Block_Advanced_ResultTest extends PHPUnit_Framework_Tes
 
     public function testSetListCollection()
     {
+        /** @var $childBlock Mage_Core_Block_Text */
         $childBlock = $this->_layout->addBlock('Mage_Core_Block_Text', 'search_result_list', 'block');
         $this->assertEmpty($childBlock->getCollection());
         $this->_block->setListCollection();

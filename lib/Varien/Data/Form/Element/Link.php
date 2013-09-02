@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -46,9 +46,10 @@ class Varien_Data_Form_Element_Link extends Varien_Data_Form_Element_Abstract
      */
     public function getElementHtml()
     {
-        $html = $this->getBeforeElementHtml();
-        $html .= '<a id="'.$this->getHtmlId().'" '.$this->serialize($this->getHtmlAttributes()).'>'. $this->getEscapedValue() . "</a>\n";
-        $html .= $this->getAfterElementHtml();
+        $html = $this->getBeforeElementHtml()
+            . '<a id="' . $this->getHtmlId() . '" ' . $this->serialize($this->getHtmlAttributes())
+            . $this->_getUiId() . '>' . $this->getEscapedValue() . "</a>\n"
+            . $this->getAfterElementHtml();
         return $html;
     }
 

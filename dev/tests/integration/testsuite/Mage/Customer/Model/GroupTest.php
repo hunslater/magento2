@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Customer
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Customer_Model_GroupTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model= new Mage_Customer_Model_Group();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model= Mage::getModel('Mage_Customer_Model_Group');
     }
 
     public function testCRUD()

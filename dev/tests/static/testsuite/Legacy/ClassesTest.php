@@ -21,7 +21,7 @@
  * @category    tests
  * @package     static
  * @subpackage  Integrity
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -61,8 +61,8 @@ class Legacy_ClassesTest extends PHPUnit_Framework_TestCase
             # ::getModel ::getSingleton ::getResourceModel ::getResourceSingleton
             \:\:get(?:Resource)?(?:Model | Singleton)\(\s*[\'"]([^\'"]+)[\'"]\s*[\),]
 
-            # addBlock createBlock getBlockClassName getBlockSingleton
-            | (?:addBlock | createBlock | getBlockClassName | getBlockSingleton)\(\s*[\'"]([^\'"]+)[\'"]\s*[\),]
+            # addBlock createBlock getBlockSingleton
+            | (?:addBlock | createBlock | getBlockSingleton)\(\s*[\'"]([^\'"]+)[\'"]\s*[\),]
 
             # Mage::helper ->helper
             | (?:Mage\:\:|\->)helper\(\s*[\'"]([^\'"]+)[\'"]\s*\)
@@ -92,7 +92,10 @@ class Legacy_ClassesTest extends PHPUnit_Framework_TestCase
 
         // check ->_init | parent::_init
         $skipForInit = implode('|',
-            array('id', '[\w\d_]+_id', 'pk', 'code', 'status', 'serial_number', 'entity_pk_value', 'currency_code')
+            array(
+                'id', '[\w\d_]+_id', 'pk', 'code', 'status', 'serial_number',
+                'entity_pk_value', 'currency_code', 'unique_key',
+            )
         );
         Utility_Classes::getAllMatches($contents, '/
             (?:parent\:\: | \->)_init\(\s*[\'"]([^\'"]+)[\'"]\s*\)

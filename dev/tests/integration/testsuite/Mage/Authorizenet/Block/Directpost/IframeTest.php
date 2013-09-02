@@ -21,13 +21,10 @@
  * @category    Magento
  * @package     Magento_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-/**
- * @group module:Mage_Authorizenet
- */
 class Mage_Authorizenet_Block_Directpost_IframeTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -36,7 +33,8 @@ class Mage_Authorizenet_Block_Directpost_IframeTest extends PHPUnit_Framework_Te
     public function testToHtml()
     {
         $xssString = '</script><script>alert("XSS")</script>';
-        $block = new Mage_Authorizenet_Block_Directpost_Iframe();
+        /** @var $block Mage_Authorizenet_Block_Directpost_Iframe */
+        $block = Mage::app()->getLayout()->createBlock('Mage_Authorizenet_Block_Directpost_Iframe');
         $block->setTemplate('directpost/iframe.phtml');
         $block->setParams(array(
             'redirect' => $xssString,

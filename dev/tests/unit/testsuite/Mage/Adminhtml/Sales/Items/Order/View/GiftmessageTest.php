@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Adminhtml
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,7 +33,7 @@ class Mage_Adminhtml_Block_Sales_Order_View_GiftmessageTest extends PHPUnit_Fram
         $expectedHtml = 'some_value';
 
         $block = $this->getMock('Mage_Adminhtml_Block_Sales_Order_View_Giftmessage',
-            array('getChildBlock', 'getChildHtml'));
+            array('getChildBlock', 'getChildHtml'), array(), '', false);
         $block->setEntity(new Varien_Object);
         $block->expects($this->once())
             ->method('getChildBlock')

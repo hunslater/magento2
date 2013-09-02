@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -32,13 +32,12 @@ class Mage_Core_Model_Layout_ElementTest extends PHPUnit_Framework_TestCase
      */
     protected $_model;
 
-    protected function tearDown()
-    {
-        $this->_model = null;
-    }
-
     public function testPrepare()
     {
+        /**
+         * @TODO: Need to use ObjectManager instead 'new'.
+         * On this moment we have next bug MAGETWO-4274 which blocker for this key.
+         */
         $this->_model = new Mage_Core_Model_Layout_Element(__DIR__ . '/../_files/_layout_update.xml', 0, true);
 
         list($blockNode) = $this->_model->xpath('//block[@name="head"]');

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,15 +39,10 @@ class Mage_Catalog_Model_Product_Attribute_Backend_PriceTest extends PHPUnit_Fra
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product_Attribute_Backend_Price;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product_Attribute_Backend_Price');
         $this->_model->setAttribute(
             Mage::getSingleton('Mage_Eav_Model_Config')->getAttribute('catalog_product', 'price')
         );
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testSetScopeDefault()
@@ -82,7 +77,8 @@ class Mage_Catalog_Model_Product_Attribute_Backend_PriceTest extends PHPUnit_Fra
      */
     public function testAfterSave()
     {
-        $product = new Mage_Catalog_Model_Product();
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->load(1);
         $product->setOrigData();
         $product->setPrice(9.99);

@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -42,7 +42,7 @@ class Varien_Data_Form_Element_Note extends Varien_Data_Form_Element_Abstract
 
     public function getElementHtml()
     {
-        $html = '<span id="' . $this->getHtmlId() . '">' . $this->getText() . '</span>';
+        $html = '<div id="' . $this->getHtmlId() . '" class="control-value">' . $this->getText() . '</div>';
         $html.= $this->getAfterElementHtml();
         return $html;
     }

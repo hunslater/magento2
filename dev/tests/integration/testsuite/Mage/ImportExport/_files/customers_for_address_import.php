@@ -21,11 +21,11 @@
  * @category    Magento
  * @package     Mage_ImportExport
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 //Create customer
-$customer = new Mage_Customer_Model_Customer();
+$customer = Mage::getModel('Mage_Customer_Model_Customer');
 $customer
     ->setWebsiteId(0)
     ->setEntityId(1)
@@ -43,7 +43,7 @@ $customer->isObjectNew(true);
 $customer->save();
 
 // Create and set addresses
-$addressFirst = new Mage_Customer_Model_Address();
+$addressFirst = Mage::getModel('Mage_Customer_Model_Address');
 $addressFirst->addData(array(
     'entity_id'         => 1,
     'firstname'         => 'Betsy',
@@ -59,7 +59,7 @@ $addressFirst->isObjectNew(true);
 $customer->addAddress($addressFirst);
 $customer->setDefaultBilling($addressFirst->getId());
 
-$addressSecond = new Mage_Customer_Model_Address();
+$addressSecond = Mage::getModel('Mage_Customer_Model_Address');
 $addressSecond->addData(array(
     'entity_id'         => 2,
     'firstname'         => 'Anthony',
@@ -76,47 +76,3 @@ $customer->addAddress($addressSecond);
 $customer->setDefaultShipping($addressSecond->getId());
 $customer->isObjectNew(true);
 $customer->save();
-
-$fixtureKey = '_fixture/Mage_ImportExport_Model_Import_Entity_V2_Eav_Customer_AddressTest_Customer';
-Mage::unregister($fixtureKey);
-Mage::register($fixtureKey, $customer);
-
-// important data from address_import_update.csv (postcode is key)
-$csvData = array(
-    'address' => array( // address records
-        'update'            => '19107',  // address with updates
-        'new'               => '85034',  // new address
-        'no_customer'       => '33602',  // there is no customer with this primary key (email+website)
-        'new_no_address_id' => '32301',  // new address without address id
-    ),
-    'update'  => array( // this data is changed in CSV file
-        '19107' => array(
-            'firstname'  => 'Katy',
-            'middlename' => 'T.',
-        ),
-    ),
-    'remove'  => array( // this data is not set in CSV file
-        '19107' => array(
-            'city'   => 'Philadelphia',
-            'region' => 'Pennsylvania',
-        ),
-    ),
-    'default' => array( // new default billing/shipping addresses
-        'billing'  => '85034',
-        'shipping' => '19107',
-    ),
-);
-
-$fixtureKey = '_fixture/Mage_ImportExport_Model_Import_Entity_V2_Eav_Customer_AddressTest_Csv_Update';
-Mage::unregister($fixtureKey);
-Mage::register($fixtureKey, $csvData);
-
-// important data from address_import_delete.csv (postcode is key)
-$csvData = array(
-    'delete'     => '19107',  // deleted address
-    'not_delete' => '72701',  // not deleted address
-);
-
-$fixtureKey = '_fixture/Mage_ImportExport_Model_Import_Entity_V2_Eav_Customer_AddressTest_Csv_Delete';
-Mage::unregister($fixtureKey);
-Mage::register($fixtureKey, $csvData);

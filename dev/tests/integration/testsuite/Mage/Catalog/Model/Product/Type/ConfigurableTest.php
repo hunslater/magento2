@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -31,6 +31,8 @@
 class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework_TestCase
 {
     /**
+     * Object under test
+     *
      * @var Mage_Catalog_Model_Product_Type_Configurable
      */
     protected $_model;
@@ -38,21 +40,16 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     /**
      * @var Mage_Catalog_Model_Product
      */
-    protected $_product = null;
+    protected $_product;
 
     protected function setUp()
     {
-        $this->_product = new Mage_Catalog_Model_Product;
+        $this->_product = Mage::getModel('Mage_Catalog_Model_Product');
         $this->_product->load(1); // fixture
 
-        $this->_model = new Mage_Catalog_Model_Product_Type_Configurable;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product_Type_Configurable');
         // prevent fatal errors by assigning proper "singleton" of type instance to the product
         $this->_product->setTypeInstance($this->_model);
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testGetRelationInfo()
@@ -73,23 +70,6 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
         $ids = $this->_model->getChildrenIds(1, false);
         $this->assertArrayHasKey(0, $ids);
         $this->assertTrue(2 === count($ids[0]));
-    }
-
-    // testGetParentIdsByChild is after testGetConfigurableAttributesAsArray, because depends on it.
-
-    public function testGetEditableAttributes()
-    {
-        $attributes = $this->_model->getEditableAttributes($this->_product);
-
-        // applicable to all types
-        $this->assertArrayHasKey('sku', $attributes);
-        $this->assertArrayHasKey('name', $attributes);
-
-        // applicable to configurable
-        $this->assertArrayHasKey('price', $attributes);
-
-        // not applicable to configurable
-        $this->assertArrayNotHasKey('weight', $attributes);
     }
 
     public function testCanUseAttribute()
@@ -136,6 +116,13 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
         foreach ($collection as $attribute) {
             $this->assertInstanceOf('Mage_Catalog_Model_Product_Type_Configurable_Attribute', $attribute);
             $this->assertEquals($testConfigurable->getId(), $attribute->getAttributeId());
+            $prices = $attribute->getPrices();
+            $this->assertCount(2, $prices); // fixture
+            $this->assertArrayHasKey('pricing_value', $prices[0]);
+            $this->assertEquals('Option 1', $prices[0]['label']);
+            $this->assertEquals(5, $prices[0]['pricing_value']);
+            $this->assertEquals('Option 2', $prices[1]['label']);
+            $this->assertEquals(5, $prices[1]['pricing_value']);
             break;
         }
     }
@@ -143,8 +130,7 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     public function testGetConfigurableAttributesAsArray()
     {
         $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
-        $this->assertArrayHasKey(0, $attributes);
-        $attribute = $attributes[0];
+        $attribute = reset($attributes);
         $this->assertArrayHasKey('id', $attribute);
         $this->assertArrayHasKey('label', $attribute);
         $this->assertArrayHasKey('use_default', $attribute);
@@ -168,7 +154,7 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
         $this->assertArrayHasKey('store_label', $attribute);
 
         $testConfigurable = $this->_getAttributeByCode('test_configurable');
-        $this->assertEquals($testConfigurable->getId(), $attributes[0]['attribute_id']);
+        $this->assertEquals($testConfigurable->getId(), $attribute['attribute_id']);
     }
 
     /**
@@ -177,8 +163,8 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     public function testGetParentIdsByChild()
     {
         $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
-        $confAttribute = $attributes[0];
-        $optionValueId = $confAttribute['values'][0]['value_index'];
+        $attribute = reset($attributes);
+        $optionValueId = $attribute['values'][0]['value_index'];
         $result = $this->_model->getParentIdsByChild($optionValueId * 10); // fixture
         $this->assertEquals(array(1), $result);
     }
@@ -239,11 +225,11 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     public function testGetProductByAttributes()
     {
         $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
-        $confAttribute = $attributes[0];
-        $optionValueId = $confAttribute['values'][0]['value_index'];
+        $attribute = reset($attributes);
+        $optionValueId = $attribute['values'][0]['value_index'];
 
         $product = $this->_model->getProductByAttributes(
-            array($confAttribute['attribute_id'] => $optionValueId),
+            array($attribute['attribute_id'] => $optionValueId),
             $this->_product
         );
         $this->assertInstanceOf('Mage_Catalog_Model_Product', $product);
@@ -256,14 +242,53 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     public function testGetSelectedAttributesInfo()
     {
         $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
-        $confAttribute = $attributes[0];
-        $optionValueId = $confAttribute['values'][0]['value_index'];
+        $attribute = reset($attributes);
+        $optionValueId = $attribute['values'][0]['value_index'];
 
         $this->_product->addCustomOption(
-            'attributes', serialize(array($confAttribute['attribute_id'] => $optionValueId))
+            'attributes', serialize(array($attribute['attribute_id'] => $optionValueId))
         );
         $info = $this->_model->getSelectedAttributesInfo($this->_product);
-        $this->assertEquals(array(array('label' => 'Test Configurable', 'value' => 'Option 1')), $info);
+        $this->assertEquals(
+            array(
+                array(
+                    'label' => 'Test Configurable',
+                    'value' => 'Option 1'
+                )
+            ),
+            $info
+        );
+    }
+
+    /**
+     * @magentoAppIsolation enabled
+     */
+    public function testGetSelectedAttributesInfoForStore()
+    {
+        $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
+
+        $attribute = reset($attributes);
+        $optionValueId = $attribute['values'][0]['value_index'];
+
+        $this->_product->addCustomOption(
+            'attributes',
+            serialize(array($attribute['attribute_id'] => $optionValueId))
+        );
+        /** @var Mage_Catalog_Model_Resource_Product_Type_Configurable_Attribute_Collection $configurableAttr */
+        $configurableAttr = $this->_model->getConfigurableAttributes($this->_product);
+        $attribute = $configurableAttr->getFirstItem();
+
+        $attribute->getProductAttribute()->setStoreLabel('store label');
+        $info = $this->_model->getSelectedAttributesInfo($this->_product);
+        $this->assertEquals(
+            array(
+                array(
+                    'label' => 'store label',
+                    'value' => 'Option 1'
+                )
+            ),
+            $info
+        );
     }
 
     /**
@@ -272,11 +297,12 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     public function testPrepareForCart()
     {
         $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
-        $confAttribute = $attributes[0];
-        $optionValueId = $confAttribute['values'][0]['value_index'];
+        $attribute = reset($attributes);
+        $optionValueId = $attribute['values'][0]['value_index'];
 
         $buyRequest = new Varien_Object(array(
-            'qty' => 5, 'super_attribute' => array($confAttribute['attribute_id'] => $optionValueId)
+            'qty' => 5,
+            'super_attribute' => array($attribute['attribute_id'] => $optionValueId)
         ));
         $result = $this->_model->prepareForCart($buyRequest, $this->_product);
         $this->assertInternalType('array', $result);
@@ -377,6 +403,124 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
         $this->assertEquals(array('super_attribute' => array(10)), $result);
     }
 
+    public function testSaveProductRelationsOneChild()
+    {
+        $oldChildrenIds = $this->_product->getTypeInstance()->getChildrenIds(1);
+        $oldChildrenIds = reset($oldChildrenIds);
+        $oneChildId = reset($oldChildrenIds);
+        $this->assertNotEmpty($oldChildrenIds);
+        $this->assertNotEmpty($oneChildId);
+
+        $this->_product->setAssociatedProductIds(array($oneChildId));
+        $this->_model->save($this->_product);
+        $this->_product->load(1);
+
+        $this->assertEquals(
+            array(array($oneChildId => $oneChildId)),
+            $this->_product->getTypeInstance()->getChildrenIds(1)
+        );
+    }
+
+    public function testSaveProductRelationsNoChildren()
+    {
+        $childrenIds = $this->_product->getTypeInstance()->getChildrenIds(1);
+        $this->assertNotEmpty(reset($childrenIds));
+
+        $this->_product->setAssociatedProductIds(array());
+        $this->_model->save($this->_product);
+        $this->_product->load(1);
+
+        $this->assertEquals(
+            array(array()),
+            $this->_product->getTypeInstance()->getChildrenIds(1)
+        );
+    }
+
+    /**
+     * @param array $productsData
+     * @dataProvider generateSimpleProductsDataProvider
+     */
+    public function testGenerateSimpleProducts($productsData)
+    {
+        $this->_product->setNewVariationsAttributeSetId(4); // Default attribute set id
+        $generatedProducts = $this->_model->generateSimpleProducts($this->_product, $productsData);
+        $this->assertEquals(3, count($generatedProducts));
+        foreach ($generatedProducts as $productId) {
+            /** @var $product Mage_Catalog_Model_Product */
+            $product = Mage::getModel('Mage_Catalog_Model_Product');
+            $product->load($productId);
+            $this->assertNotNull($product->getName());
+            $this->assertNotNull($product->getSku());
+            $this->assertNotNull($product->getPrice());
+            $this->assertNotNull($product->getWeight());
+        }
+    }
+
+    /**
+     * @param array $productsData
+     * @dataProvider generateSimpleProductsWithoutQtyDataProvider
+     * @magentoDbIsolation enabled
+     */
+    public function testGenerateSimpleProductsWithoutQty($productsData)
+    {
+        $this->_product->setNewVariationsAttributeSetId(4);
+        $generatedProducts = $this->_model->generateSimpleProducts($this->_product, $productsData);
+        foreach ($generatedProducts as $productId) {
+            /** @var $product Mage_Catalog_Model_Product */
+            $product = Mage::getModel('Mage_Catalog_Model_Product');
+            $product->load($productId);
+            $this->assertEquals('0', $product->getStockItem()->getData('manage_stock'));
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public static function generateSimpleProductsDataProvider()
+    {
+        return array(array(array(
+            array(
+                'name' => '1-aaa',
+                'configurable_attribute' => '{"configurable_attribute":"25"}',
+                'price' => '3',
+                'sku' => '1-aaa',
+                'quantity_and_stock_status' => array('qty' => '5'),
+                'weight' => '6'),
+            array(
+                'name' => '1-bbb',
+                'configurable_attribute' => '{"configurable_attribute":"24"}',
+                'price' => '3',
+                'sku' => '1-bbb',
+                'quantity_and_stock_status' => array('qty' => '5'),
+                'weight' => '6'),
+            array(
+                'name' => '1-ccc',
+                'configurable_attribute' => '{"configurable_attribute":"23"}',
+                'price' => '3',
+                'sku' => '1-ccc',
+                'quantity_and_stock_status' => array('qty' => '5'),
+                'weight' => '6'
+            ),
+        )));
+    }
+
+    /**
+     * @return array
+     */
+    public static function generateSimpleProductsWithoutQtyDataProvider()
+    {
+        return array(array(array(
+            array(
+                'name' => '1-aaa',
+                'configurable_attribute' => '{"configurable_attribute":"23"}',
+                'price' => '3',
+                'sku' => '1-aaa-1',
+                'quantity_and_stock_status' => array('qty' => ''),
+                'weight' => '6')
+            ),
+        ));
+    }
+
     /**
      * Find and instantiate a catalog attribute model by attribute code
      *
@@ -394,11 +538,12 @@ class Mage_Catalog_Model_Product_Type_ConfigurableTest extends PHPUnit_Framework
     protected function _prepareForCart()
     {
         $attributes = $this->_model->getConfigurableAttributesAsArray($this->_product);
-        $confAttribute = $attributes[0];
-        $optionValueId = $confAttribute['values'][0]['value_index'];
+        $attribute = reset($attributes);
+        $optionValueId = $attribute['values'][0]['value_index'];
 
         $buyRequest = new Varien_Object(array(
-            'qty' => 5, 'super_attribute' => array($confAttribute['attribute_id'] => $optionValueId)
+            'qty' => 5,
+            'super_attribute' => array($attribute['attribute_id'] => $optionValueId)
         ));
         $this->_model->prepareForCart($buyRequest, $this->_product);
     }

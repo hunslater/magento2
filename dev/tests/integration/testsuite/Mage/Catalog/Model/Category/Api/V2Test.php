@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,13 +37,8 @@ class Mage_Catalog_Model_Category_Api_V2Test extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Category_Api_V2;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Category_Api_V2');
         Mage::app()->setCurrentStore(Mage_Core_Model_App::ADMIN_STORE_ID);
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testCRUD()

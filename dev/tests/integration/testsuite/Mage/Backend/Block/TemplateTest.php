@@ -21,14 +21,14 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_Backend_Block_Template.
  *
- * @group module:Mage_Backend
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Block_TemplateTest extends PHPUnit_Framework_TestCase
 {
@@ -39,12 +39,8 @@ class Mage_Backend_Block_TemplateTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_block = new Mage_Backend_Block_Template;
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
+        parent::setUp();
+        $this->_block = Mage::app()->getLayout()->createBlock('Mage_Backend_Block_Template');
     }
 
     /**
@@ -66,7 +62,5 @@ class Mage_Backend_Block_TemplateTest extends PHPUnit_Framework_TestCase
 
         Mage::app()->getStore()->setConfig('advanced/modules_disable_output/dummy', 'false');
         $this->assertTrue($this->_block->isOutputEnabled('dummy'));
-
-
     }
 }

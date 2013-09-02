@@ -21,11 +21,12 @@
  * @category    Magento
  * @package     Mage_Cms
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-$block = new Mage_Cms_Model_Block;
+/** @var $block Mage_Cms_Model_Block */
+$block = Mage::getModel('Mage_Cms_Model_Block');
 $block->setTitle('CMS Block Title')
     ->setIdentifier('fixture_block')
     ->setContent('<h1>Fixture Block Title</h1>

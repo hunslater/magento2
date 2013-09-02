@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Sales
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -35,10 +35,10 @@ class Mage_Sales_Model_Order_Payment_TransactionTest extends PHPUnit_Framework_T
 {
     public function testLoadByTxnId()
     {
-        $order = new Mage_Sales_Model_Order();
+        $order = Mage::getModel('Mage_Sales_Model_Order');
         $order->loadByIncrementId('100000001');
 
-        $model = new Mage_Sales_Model_Order_Payment_Transaction;
+        $model = Mage::getModel('Mage_Sales_Model_Order_Payment_Transaction');
         $model->setOrderPaymentObject($order->getPayment())
             ->loadByTxnId('invalid_transaction_id');
 

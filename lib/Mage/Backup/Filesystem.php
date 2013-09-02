@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_Backup
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -249,7 +249,7 @@ class Mage_Backup_Filesystem extends Mage_Backup_Abstract
     }
 
     /**
-     * Check backups directory existance and whether it's writeable
+     * Check backups directory existence and whether it's writeable
      *
      * @throws Mage_Exception
      */

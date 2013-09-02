@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Filter
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -47,7 +47,7 @@ class Varien_Filter_Object extends Zend_Filter
             throw new Exception('Expecting an instance of Varien_Object');
         }
         $class = get_class($object);
-        $out = new $class;
+        $out = Mage::getModel($class);
         foreach ($object->getData() as $column=>$value) {
             $value = parent::filter($value);
             if (isset($this->_columnFilters[$column])) {

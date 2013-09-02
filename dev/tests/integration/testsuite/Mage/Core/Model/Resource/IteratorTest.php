@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -41,17 +41,12 @@ class Mage_Core_Model_Resource_IteratorTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Core_Model_Resource_Iterator();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getResourceModel('Mage_Core_Model_Resource_Iterator');
     }
 
     public function testWalk()
     {
-        $collection = new Mage_Core_Model_Resource_Store_Collection();
+        $collection = Mage::getResourceModel('Mage_Core_Model_Resource_Store_Collection');
         $this->_model->walk($collection->getSelect(), array(array($this, 'walkCallback')));
         $this->assertGreaterThan(0, $this->_callbackCounter);
     }

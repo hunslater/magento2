@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -32,7 +32,8 @@ class Mage_Catalog_Model_Product_ImageTest extends PHPUnit_Framework_TestCase
      */
     public function testSetBaseFilePlaceholder()
     {
-        $model = new Mage_Catalog_Model_Product_Image;
+        /** @var $model Mage_Catalog_Model_Product_Image */
+        $model = Mage::getModel('Mage_Catalog_Model_Product_Image');
         $model->setDestinationSubdir('image')->setBaseFile('');
         $this->assertEmpty($model->getBaseFile());
         return $model;
@@ -44,7 +45,7 @@ class Mage_Catalog_Model_Product_ImageTest extends PHPUnit_Framework_TestCase
      */
     public function testSaveFilePlaceholder($model)
     {
-        $processor = $this->getMock('Varien_Image', array('save'));
+        $processor = $this->getMock('Varien_Image', array('save'), array(), '', false);
         $processor->expects($this->exactly(0))->method('save');
         $model->setImageProcessor($processor)->saveFile();
     }
@@ -56,7 +57,7 @@ class Mage_Catalog_Model_Product_ImageTest extends PHPUnit_Framework_TestCase
     public function testGetUrlPlaceholder($model)
     {
         $this->assertStringMatchesFormat(
-            'http://localhost/pub/media/skin/frontend/%s/Mage_Catalog/images/product/placeholder/image.jpg',
+            'http://localhost/pub/static/frontend/%s/Mage_Catalog/images/product/placeholder/image.jpg',
             $model->getUrl()
         );
     }

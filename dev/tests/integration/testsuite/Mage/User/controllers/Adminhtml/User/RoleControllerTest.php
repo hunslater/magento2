@@ -21,20 +21,20 @@
  * @category    Magento
  * @package     Magento_User
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_User_Adminhtml_User_RoleController.
  *
- * @group module:Mage_User
+ * @magentoAppArea adminhtml
  */
-class Mage_User_Adminhtml_User_RoleControllerTest extends Mage_Adminhtml_Utility_Controller
+class Mage_User_Adminhtml_User_RoleControllerTest extends Mage_Backend_Utility_Controller
 {
     public function testEditRoleAction()
     {
-        $roleAdmin = new Mage_User_Model_Role();
+        $roleAdmin = Mage::getModel('Mage_User_Model_Role');
         $roleAdmin->load(Magento_Test_Bootstrap::ADMIN_ROLE_NAME, 'role_name');
 
         $this->getRequest()->setParam('rid', $roleAdmin->getId());
@@ -42,7 +42,7 @@ class Mage_User_Adminhtml_User_RoleControllerTest extends Mage_Adminhtml_Utility
         $this->dispatch('backend/admin/user_role/editrole');
 
         $this->assertContains('Role Information', $this->getResponse()->getBody());
-        $this->assertContains("Edit Role '" . $roleAdmin->getRoleName() . "'", $this->getResponse()->getBody());
+        $this->assertContains($roleAdmin->getRoleName(), $this->getResponse()->getBody());
     }
 
     /**

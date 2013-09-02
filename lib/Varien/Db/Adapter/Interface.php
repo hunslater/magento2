@@ -20,7 +20,7 @@
  *
  * @category    Varien
  * @package     Varien_Db
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -62,6 +62,21 @@ interface Varien_Db_Adapter_Interface
      * Error message for DDL query in transactions
      */
     const ERROR_DDL_MESSAGE = 'DDL statements are not allowed in transactions';
+
+    /**
+     * Error message for unfinished rollBack transaction
+     */
+    const ERROR_ROLLBACK_INCOMPLETE_MESSAGE = 'Rolled back transaction has not been completed correctly.';
+
+    /**
+     * Error message for asymmetric transaction rollback
+     */
+    const ERROR_ASYMMETRIC_ROLLBACK_MESSAGE = 'Asymmetric transaction rollback.';
+
+    /**
+     * Error message for asymmetric transaction commit
+     */
+    const ERROR_ASYMMETRIC_COMMIT_MESSAGE = 'Asymmetric transaction commit.';
 
     /**
      * Begin new DB transaction for connection
@@ -635,10 +650,10 @@ interface Varien_Db_Adapter_Interface
     /**
      * Set cache adapter
      *
-     * @param Zend_Cache_Backend_Interface $adapter
+     * @param Magento_Cache_FrontendInterface $adapter
      * @return Varien_Db_Adapter_Interface
      */
-    public function setCacheAdapter($adapter);
+    public function setCacheAdapter(Magento_Cache_FrontendInterface $adapter);
 
     /**
      * Allow DDL caching

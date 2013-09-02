@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,14 +39,8 @@ class Mage_Core_Block_Text_ListTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_layout = new Mage_Core_Model_Layout;
+        $this->_layout = Mage::getModel('Mage_Core_Model_Layout');
         $this->_block = $this->_layout->createBlock('Mage_Core_Block_Text_List');
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
-        $this->_layout = null;
     }
 
     public function testToHtml()

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Test
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -72,40 +72,19 @@ abstract class Magento_Test_TestCase_IntegrityAbstract extends PHPUnit_Framework
     }
 
     /**
-     * Returns flat array of skins currently located in system
+     * Returns flat array of themes currently located in system
      *
-     * @return array
-     */
-    protected function _getDesignSkins()
-    {
-        $result = array();
-        foreach (array('adminhtml', 'frontend', 'install') as $area) {
-            $entities = Mage::getDesign()->getDesignEntitiesStructure($area, false);
-            foreach ($entities as $package => $themes) {
-                foreach ($themes as $theme => $skins) {
-                    foreach (array_keys($skins) as $skin) {
-                        $result[] = "{$area}/{$package}/{$theme}/{$skin}";
-                    }
-                }
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * Returns design themes, present in system
-     *
-     * @return array
+     * @return Mage_Core_Model_Theme[]
      */
     protected function _getDesignThemes()
     {
-        $result = array();
-        foreach ($this->_getDesignSkins() as $skin) {
-            list ($area, $package, $theme) = explode('/', $skin);
-            $view = "{$area}/{$package}/{$theme}";
-            $result[$view] = $view;
+        $themeItems = array();
+        /** @var $themeCollection Mage_Core_Model_Theme_Collection */
+        $themeCollection = Mage::getObjectManager()->create('Mage_Core_Model_Resource_Theme_Collection');
+        /** @var $theme Mage_Core_Model_Theme */
+        foreach ($themeCollection as $theme) {
+            $themeItems[$theme->getId()] = $theme;
         }
-        $result = array_values($result); // Return flat array without some special keys
-        return $result;
+        return $themeItems;
     }
 }

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Framework
  * @subpackage  Config
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,7 +37,7 @@ class Magento_Config_View extends Magento_Config_XmlAbstract
      */
     public function getSchemaFile()
     {
-        return __DIR__ . '/view.xsd';
+        return __DIR__ . '/etc/view.xsd';
     }
 
     /**
@@ -85,6 +85,16 @@ class Magento_Config_View extends Magento_Config_XmlAbstract
     public function getVarValue($module, $var)
     {
         return isset($this->_data[$module][$var]) ? $this->_data[$module][$var] : false;
+    }
+
+    /**
+     * Return copy of DOM
+     *
+     * @return Magento_Config_Dom
+     */
+    public function getDomConfigCopy()
+    {
+        return clone $this->_getDomConfigModel();
     }
 
     /**

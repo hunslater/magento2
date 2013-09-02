@@ -20,13 +20,14 @@
  *
  * @category    Mage
  * @package     Mage_Shell
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-require_once '../../app/bootstrap.php';
-Mage::app('admin', 'store');
-
-/** @var $shell Mage_Log_Model_Shell */
-$shell = Mage::getModel('Mage_Log_Model_Shell', basename(__FILE__));
-$shell->run();
+require_once __DIR__ . '/../../app/bootstrap.php';
+$params = array(
+    Mage::PARAM_RUN_CODE => 'admin',
+    Mage::PARAM_RUN_TYPE => 'store',
+);
+$entryPoint = new Mage_Log_Model_EntryPoint_Shell(new Mage_Core_Model_Config_Primary(BP, $params), basename(__FILE__));
+$entryPoint->processRequest();

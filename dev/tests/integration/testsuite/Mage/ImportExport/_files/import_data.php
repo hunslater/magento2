@@ -21,14 +21,13 @@
  * @category    Magento
  * @package     Mage_ImportExport
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 $bunches = array(
     0 => array(
         'entity'         => 'customer',
-        'entity_subtype' => 'customer',
         'behavior'       => 'v2_update',
         'data'           => array(
             0 =>
@@ -42,7 +41,7 @@ $bunches = array(
                 'default_billing'             => '1',
                 'default_shipping'            => '1',
                 'disable_auto_group_change'   => '0',
-                'dob'                         => '13-06-84',
+                'dob'                         => '13-06-1984',
                 'firstname'                   => 'Anthony',
                 'gender'                      => 'Male',
                 'group_id'                    => '1',
@@ -94,7 +93,6 @@ $bunches = array(
     ),
     1 => array(
         'entity'         => 'customer',
-        'entity_subtype' => 'customer',
         'behavior'       => 'v2_update',
         'data'           => array(
             0 =>
@@ -131,10 +129,10 @@ $bunches = array(
     )
 );
 
-$importDataResource = new Mage_ImportExport_Model_Resource_Import_Data();
+$importDataResource = Mage::getResourceModel('Mage_ImportExport_Model_Resource_Import_Data');
 
 foreach ($bunches as $bunch) {
-    $importDataResource->saveBunch($bunch['entity'], $bunch['behavior'], $bunch['data'], $bunch['entity_subtype']);
+    $importDataResource->saveBunch($bunch['entity'], $bunch['behavior'], $bunch['data']);
 }
 
 Mage::unregister('_fixture/Mage_ImportExport_Import_Data');

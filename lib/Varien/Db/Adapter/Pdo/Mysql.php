@@ -1,5 +1,7 @@
 <?php
 /**
+ * Mysql PDO DB adapter
+ *
  * Magento
  *
  * NOTICE OF LICENSE
@@ -18,14 +20,8 @@
  * versions in the future. If you wish to customize Magento for your
  * needs please refer to http://www.magentocommerce.com for more information.
  *
- * @category   Varien
- * @package    Varien_Db
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- */
-
-/**
- * Mysql PDO DB adapter
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements Varien_Db_Adapter_Interface
 {
@@ -71,6 +67,13 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
      * @var int
      */
     protected $_transactionLevel    = 0;
+
+    /**
+     * Whether transaction was rolled back or not
+     *
+     * @var bool
+     */
+    protected $_isRolledBack = false;
 
     /**
      * Set attribute to connection flag
@@ -152,7 +155,7 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
     /**
      * Cache frontend adapter instance
      *
-     * @var Zend_Cache_Core
+     * @var Magento_Cache_FrontendInterface
      */
     protected $_cacheAdapter;
 
@@ -219,6 +222,9 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
      */
     public function beginTransaction()
     {
+        if ($this->_isRolledBack) {
+            throw new Exception(Varien_Db_Adapter_Interface::ERROR_ROLLBACK_INCOMPLETE_MESSAGE);
+        }
         if ($this->_transactionLevel === 0) {
             $this->_debugTimer();
             parent::beginTransaction();
@@ -235,12 +241,14 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
      */
     public function commit()
     {
-        if ($this->_transactionLevel === 1) {
+        if ($this->_transactionLevel === 1 && !$this->_isRolledBack) {
             $this->_debugTimer();
             parent::commit();
             $this->_debugStat(self::DEBUG_TRANSACTION, 'COMMIT');
         } elseif ($this->_transactionLevel === 0) {
-            throw new Exception('Asymmetric transaction commit.');
+            throw new Exception(Varien_Db_Adapter_Interface::ERROR_ASYMMETRIC_COMMIT_MESSAGE);
+        } elseif ($this->_isRolledBack) {
+            throw new Exception(Varien_Db_Adapter_Interface::ERROR_ROLLBACK_INCOMPLETE_MESSAGE);
         }
         --$this->_transactionLevel;
         return $this;
@@ -251,14 +259,17 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
      *
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function rollback()
+    public function rollBack()
     {
         if ($this->_transactionLevel === 1) {
             $this->_debugTimer();
-            parent::rollback();
+            parent::rollBack();
+            $this->_isRolledBack = false;
             $this->_debugStat(self::DEBUG_TRANSACTION, 'ROLLBACK');
         } elseif ($this->_transactionLevel === 0) {
-            throw new Exception('Asymmetric transaction rollback.');
+            throw new Exception(Varien_Db_Adapter_Interface::ERROR_ASYMMETRIC_ROLLBACK_MESSAGE);
+        } else {
+            $this->_isRolledBack = true;
         }
         --$this->_transactionLevel;
         return $this;
@@ -309,6 +320,10 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
 
         if (!extension_loaded('pdo_mysql')) {
             throw new Zend_Db_Adapter_Exception('pdo_mysql extension is not installed');
+        }
+
+        if (!isset($this->_config['host'])) {
+            throw new Zend_Db_Adapter_Exception('No host configured to connect to');
         }
 
         if (strpos($this->_config['host'], '/') !== false) {
@@ -423,6 +438,13 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
                 $this->_debugStat(self::DEBUG_QUERY, $sql, $bind, $result);
                 return $result;
             } catch (Exception $e) {
+                // Finalize broken query
+                $profiler = $this->getProfiler();
+                if ($profiler instanceof Varien_Db_Profiler) {
+                    /** @var Varien_Db_Profiler $profiler */
+                    $profiler->queryEndLast();
+                }
+
                 /** @var $pdoException PDOException */
                 $pdoException = null;
                 if ($e instanceof PDOException) {
@@ -1440,7 +1462,7 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
             return $this->_ddlCache[$ddlType][$tableCacheKey];
         }
 
-        if ($this->_cacheAdapter instanceof Zend_Cache_Core) {
+        if ($this->_cacheAdapter) {
             $cacheId = $this->_getCacheId($tableCacheKey, $ddlType);
             $data = $this->_cacheAdapter->load($cacheId);
             if ($data !== false) {
@@ -1467,7 +1489,7 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
         }
         $this->_ddlCache[$ddlType][$tableCacheKey] = $data;
 
-        if ($this->_cacheAdapter instanceof Zend_Cache_Core) {
+        if ($this->_cacheAdapter) {
             $cacheId = $this->_getCacheId($tableCacheKey, $ddlType);
             $data = serialize($data);
             $this->_cacheAdapter->save($data, $cacheId, array(self::DDL_CACHE_TAG));
@@ -1491,7 +1513,7 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
         }
         if ($tableName === null) {
             $this->_ddlCache = array();
-            if ($this->_cacheAdapter instanceof Zend_Cache_Core) {
+            if ($this->_cacheAdapter) {
                 $this->_cacheAdapter->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array(self::DDL_CACHE_TAG));
             }
         } else {
@@ -1502,7 +1524,7 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
                 unset($this->_ddlCache[$ddlType][$cacheKey]);
             }
 
-            if ($this->_cacheAdapter instanceof Zend_Cache_Core) {
+            if ($this->_cacheAdapter) {
                 foreach ($ddlTypes as $ddlType) {
                     $cacheId = $this->_getCacheId($cacheKey, $ddlType);
                     $this->_cacheAdapter->remove($cacheId);
@@ -1863,7 +1885,7 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
                 }
             } elseif (is_string($v)) {
                 $value = sprintf('VALUES(%s)', $this->quoteIdentifier($v));
-                $field = $v;
+                $field = $this->quoteIdentifier($v);
             }
 
             if ($field && $value) {
@@ -1958,10 +1980,10 @@ class Varien_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Mysql implements V
     /**
      * Set cache adapter
      *
-     * @param Zend_Cache_Backend_Interface $adapter
+     * @param Magento_Cache_FrontendInterface $adapter
      * @return Varien_Db_Adapter_Pdo_Mysql
      */
-    public function setCacheAdapter($adapter)
+    public function setCacheAdapter(Magento_Cache_FrontendInterface $adapter)
     {
         $this->_cacheAdapter = $adapter;
         return $this;

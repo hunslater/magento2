@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,10 +33,31 @@
  */
 class Varien_Data_Form_Element_Button extends Varien_Data_Form_Element_Abstract
 {
+    /**
+     * Additional html attributes
+     *
+     * @var array
+     */
+    protected $_htmlAttributes = array('data-mage-init');
+
+    /**
+     * @param array $attributes
+     */
     public function __construct($attributes=array()) 
     {
         parent::__construct($attributes);
         $this->setType('button');
         $this->setExtType('textfield');
     }
-}                           
+
+    /**
+     * Html attributes
+     *
+     * @return array
+     */
+    public function getHtmlAttributes()
+    {
+        $attributes = parent::getHtmlAttributes();
+        return array_merge($attributes, $this->_htmlAttributes);
+    }
+}

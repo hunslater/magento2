@@ -21,16 +21,22 @@
  * @category    Magento
  * @package     Magento_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Adminhtml_Block_Newsletter_SubscriberTest extends PHPUnit_Framework_TestCase
 {
     public function testGetShowQueueAdd()
     {
-        $layout = new Mage_Core_Model_Layout();
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
+        /** @var $block Mage_Adminhtml_Block_Newsletter_Subscriber */
         $block = $layout->createBlock('Mage_Adminhtml_Block_Newsletter_Subscriber', 'block');
+        /** @var $childBlock Mage_Core_Block_Template */
         $childBlock = $layout->addBlock('Mage_Core_Block_Template', 'grid', 'block');
 
         $expected = 'test_data';

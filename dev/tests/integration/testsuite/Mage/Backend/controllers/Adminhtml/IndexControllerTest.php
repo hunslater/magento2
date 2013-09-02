@@ -21,13 +21,14 @@
  * @category    Magento
  * @package     Magento_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_Backend_Adminhtml_IndexController.
  *
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Adminhtml_IndexControllerTest extends Magento_Test_TestCase_ControllerAbstract
 {
@@ -35,12 +36,6 @@ class Mage_Backend_Adminhtml_IndexControllerTest extends Magento_Test_TestCase_C
      * @var Mage_Backend_Model_Auth
      */
     protected $_auth;
-
-    protected function tearDown()
-    {
-        $this->_auth = null;
-        parent::tearDown();
-    }
 
     /**
      * Performs user login
@@ -69,8 +64,10 @@ class Mage_Backend_Adminhtml_IndexControllerTest extends Magento_Test_TestCase_C
     {
         $this->dispatch('backend/admin/index/index');
         $this->assertFalse($this->getResponse()->isRedirect());
-        $expected = 'Log in to Admin Panel';
-        $this->assertContains($expected, $this->getResponse()->getBody(), 'There is no login form');
+
+        $body = $this->getResponse()->getBody();
+        $this->assertSelectCount('form#login-form input#username[type=text]', true, $body);
+        $this->assertSelectCount('form#login-form input#login[type=password]', true, $body);
     }
 
     /**

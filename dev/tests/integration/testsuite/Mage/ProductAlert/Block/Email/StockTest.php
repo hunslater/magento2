@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_ProductAlert
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_ProductAlert_Block_Email_StockTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_block = new Mage_ProductAlert_Block_Email_Stock();
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
+        $this->_block = Mage::app()->getLayout()->createBlock('Mage_ProductAlert_Block_Email_Stock');
     }
 
     /**
@@ -47,7 +42,8 @@ class Mage_ProductAlert_Block_Email_StockTest extends PHPUnit_Framework_TestCase
      */
     public function testThumbnail()
     {
-        $product = new Mage_Catalog_Model_Product();
+        Mage::app()->getArea(Mage_Core_Model_App_Area::AREA_FRONTEND)->load();
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->load(1);
 
         $size = $this->_block->getThumbnailSize();

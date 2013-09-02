@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,12 +39,7 @@ class Mage_Catalog_Block_Product_ListTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_block = new Mage_Catalog_Block_Product_List;
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
+        $this->_block = Mage::app()->getLayout()->createBlock('Mage_Catalog_Block_Product_List');
     }
 
     public function testGetLayer()
@@ -72,6 +67,7 @@ class Mage_Catalog_Block_Product_ListTest extends PHPUnit_Framework_TestCase
      */
     public function testToolbarCoverage()
     {
+        /** @var $parent Mage_Catalog_Block_Product_List */
         $parent = $this->_getLayout()->createBlock('Mage_Catalog_Block_Product_List', 'parent');
 
         /* Prepare toolbar block */
@@ -95,8 +91,9 @@ class Mage_Catalog_Block_Product_ListTest extends PHPUnit_Framework_TestCase
     public function testGetAdditionalHtml()
     {
         $layout = $this->_getLayout();
+        /** @var $parent Mage_Catalog_Block_Product_List */
         $parent = $layout->createBlock('Mage_Catalog_Block_Product_List');
-        $childBlock = $layout->createBlock('Mage_Core_Block_Text', 'test', array('text' => 'test'));
+        $childBlock = $layout->createBlock('Mage_Core_Block_Text', 'test', array('data' => array('text' => 'test')));
         $layout->setChild($parent->getNameInLayout(), $childBlock->getNameInLayout(), 'additional');
         $this->assertEquals('test', $parent->getAdditionalHtml());
     }
@@ -116,7 +113,8 @@ class Mage_Catalog_Block_Product_ListTest extends PHPUnit_Framework_TestCase
 
     public function testPrepareSortableFieldsByCategory()
     {
-        $category = new Mage_Catalog_Model_Category();
+        /** @var $category Mage_Catalog_Model_Category */
+        $category = Mage::getModel('Mage_Catalog_Model_Category');
         $category->setDefaultSortBy('name');
         $this->_block->prepareSortableFieldsByCategory($category);
         $this->assertEquals('name', $this->_block->getSortBy());

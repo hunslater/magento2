@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Framework
  * @subpackage  Config
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -65,6 +65,16 @@ abstract class Magento_Config_XmlAbstract
     abstract public function getSchemaFile();
 
     /**
+     * Get absolute path to per-file XML-schema file
+     *
+     * @return string
+     */
+    public function getPerFileSchemaFile()
+    {
+        return null;
+    }
+
+    /**
      * Extract configuration data from the DOM structure
      *
      * @param DOMDocument $dom
@@ -85,16 +95,21 @@ abstract class Magento_Config_XmlAbstract
             if (!file_exists($file)) {
                 throw new Magento_Exception("File does not exist: {$file}");
             }
-            $this->_getDomConfigModel()->merge(file_get_contents($file));
-            if ($this->_isRuntimeValidated()) {
-                $this->_performValidate($file);
+            try {
+                $this->_getDomConfigModel()->merge(file_get_contents($file));
+            } catch (Magento_Config_Dom_ValidationException $e) {
+                throw new Magento_Exception("Invalid XML in file " . $file . ":\n" . $e->getMessage());
             }
+        }
+        if ($this->_isRuntimeValidated()) {
+            $this->_performValidate();
         }
         return $this->_getDomConfigModel()->getDom();
     }
 
     /**
      * Perform xml validation
+     *
      * @param string $file
      * @return Magento_Config_XmlAbstract
      * @throws Magento_Exception if invalid XML-file passed
@@ -103,17 +118,14 @@ abstract class Magento_Config_XmlAbstract
     {
         if (!$this->_getDomConfigModel()->validate($this->getSchemaFile(), $errors)) {
             $message = is_null($file) ?  "Invalid Document \n" : "Invalid XML-file: {$file}\n";
-            /** @var libXMLError $error */
-            foreach ($errors as $error) {
-                $message .= "{$error->message} Line: {$error->line}\n";
-            }
-            throw new Magento_Exception($message);
+            throw new Magento_Exception($message . implode("\n", $errors));
         }
         return $this;
     }
 
     /**
      * Get if xml files must be runtime validated
+     *
      * @return boolean
      */
     protected function _isRuntimeValidated()
@@ -123,12 +135,17 @@ abstract class Magento_Config_XmlAbstract
 
     /**
      * Get Dom configuration model
+     *
      * @return Magento_Config_Dom
+     * @throws Magento_Config_Dom_ValidationException
      */
     protected function _getDomConfigModel()
     {
         if (is_null($this->_domConfig)) {
-            $this->_domConfig = new Magento_Config_Dom($this->_getInitialXml(), $this->_getIdAttributes());
+            $schemaFile = $this->getPerFileSchemaFile() && $this->_isRuntimeValidated()
+                ? $this->getPerFileSchemaFile()
+                : null;
+            $this->_domConfig = new Magento_Config_Dom($this->_getInitialXml(), $this->_getIdAttributes(), $schemaFile);
         }
         return $this->_domConfig;
     }

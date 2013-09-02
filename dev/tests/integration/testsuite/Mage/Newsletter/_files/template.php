@@ -21,11 +21,11 @@
  * @category    Magento
  * @package     Mage_Newsletter
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-$template = new Mage_Newsletter_Model_Template;
+$template = Mage::getModel('Mage_Newsletter_Model_Template');
 $template->setTemplateCode('fixture_tpl')
     ->setTemplateText('<p>Follow this link to unsubscribe</p>
 <!-- This tag is for unsubscribe link  -->

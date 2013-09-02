@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Magento_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Adminhtml_Block_Report_Sales_Invoiced_GridTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -35,7 +38,7 @@ class Mage_Adminhtml_Block_Report_Sales_Invoiced_GridTest extends PHPUnit_Framew
      */
     protected function _createBlock($reportType = null)
     {
-        $block = new Mage_Adminhtml_Block_Report_Sales_Invoiced_Grid();
+        $block = Mage::app()->getLayout()->createBlock('Mage_Adminhtml_Block_Report_Sales_Invoiced_Grid');
 
         $filterData = new Varien_Object();
         if ($reportType) {

@@ -21,27 +21,76 @@
  * @category    Mage
  * @package     Mage_User
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * @group module:Mage_User
+ * @magentoAppArea adminhtml
  */
-class Mage_User_Adminhtml_UserControllerTest extends Mage_Adminhtml_Utility_Controller
+class Mage_User_Adminhtml_UserControllerTest extends Mage_Backend_Utility_Controller
 {
-    /**
-     * @covers Mage_User_Adminhtml_UserController::indexAction
-     */
     public function testIndexAction()
     {
         $this->dispatch('backend/admin/user/index');
-        $this->assertStringMatchesFormat('%a<div class="content-header">%aUsers%a', $this->getResponse()->getBody());
+        $response = $this->getResponse()->getBody();
+        $this->assertContains('Users', $response);
+        $this->assertSelectCount('#permissionsUserGrid_table', 1, $response);
+    }
+
+    public function testSaveActionNoData()
+    {
+        $this->dispatch('backend/admin/user/save');
+        $this->assertRedirect($this->stringContains('backend/admin/user/index/'));
     }
 
     /**
-     * @covers Mage_User_Adminhtml_UserController::rolesGridAction
+     * @magentoDataFixture Mage/User/_files/dummy_user.php
      */
+    public function testSaveActionWrongId()
+    {
+        /** @var $user Mage_User_Model_User */
+        $user = Mage::getModel('Mage_User_Model_User')->loadByUsername('dummy_username');
+        $userId = $user->getId();
+        $this->assertNotEmpty($userId, 'Broken fixture');
+        $user->delete();
+        $this->getRequest()->setPost('user_id', $userId);
+        $this->dispatch('backend/admin/user/save');
+        $this->assertSessionMessages(
+            $this->equalTo(array('This user no longer exists.')), Mage_Core_Model_Message::ERROR
+        );
+        $this->assertRedirect($this->stringContains('backend/admin/user/index/'));
+    }
+
+    /**
+     * @magentoDbIsolation enabled
+     */
+    public function testSaveAction()
+    {
+        $this->_createNew();
+        $this->assertSessionMessages(
+            $this->equalTo(array('You saved the user.')), Mage_Core_Model_Message::SUCCESS
+        );
+        $this->assertRedirect($this->stringContains('backend/admin/user/index/'));
+    }
+
+    /**
+     * Create new user through dispatching save action
+     */
+    private function _createNew()
+    {
+        $fixture = uniqid();
+        $this->getRequest()->setPost(array(
+            'username' => $fixture,
+            'email' => "{$fixture}@example.com",
+            'firstname' => 'First',
+            'lastname' => 'Last',
+            'password' => 'password_with_1_number',
+            'password_confirmation' => 'password_with_1_number',
+        ));
+        $this->dispatch('backend/admin/user/save');
+    }
+
     public function testRoleGridAction()
     {
         $this->getRequest()
@@ -52,9 +101,6 @@ class Mage_User_Adminhtml_UserControllerTest extends Mage_Adminhtml_Utility_Cont
         $this->assertStringMatchesFormat($expected, $this->getResponse()->getBody());
     }
 
-    /**
-     * @covers Mage_User_Adminhtml_UserController::rolesGridAction
-     */
     public function testRolesGridAction()
     {
         $this->getRequest()
@@ -66,14 +112,14 @@ class Mage_User_Adminhtml_UserControllerTest extends Mage_Adminhtml_Utility_Cont
         $this->assertStringMatchesFormat($expected, $this->getResponse()->getBody());
     }
 
-    /*
-     * @covers Mage_User_Adminhtml_UserController::editAction
-     */
     public function testEditAction()
     {
         $this->getRequest()->setParam('user_id', 1);
         $this->dispatch('backend/admin/user/edit');
-        $expected = '%a<h3 class="icon-head head-user">Edit User%a';
-        $this->assertStringMatchesFormat($expected, $this->getResponse()->getBody());
+        $response = $this->getResponse()->getBody();
+        //check "User Information" header and fieldset
+        $this->assertContains('data-ui-id="adminhtml-user-edit-tabs-title"', $response);
+        $this->assertContains('User Information', $response);
+        $this->assertSelectCount('#user_base_fieldset', 1, $response);
     }
 }

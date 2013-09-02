@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Widget_Model_Widget_ConfigTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Widget_Model_Widget_Config;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Widget_Model_Widget_Config');
     }
 
     /**
@@ -49,7 +44,7 @@ class Mage_Widget_Model_Widget_ConfigTest extends PHPUnit_Framework_TestCase
      */
     public function testGetPluginSettings()
     {
-        Mage::getDesign()->setDesignTheme('default/default/default', 'adminhtml');
+        Mage::getDesign()->setDesignTheme('default/basic', 'adminhtml');
 
         $config = new Varien_Object();
         $settings = $this->_model->getPluginSettings($config);
@@ -59,7 +54,7 @@ class Mage_Widget_Model_Widget_ConfigTest extends PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('widget_window_url', $settings);
 
         $jsFilename = $settings['widget_plugin_src'];
-        $this->assertStringStartsWith('http://localhost/pub/js/', $jsFilename);
+        $this->assertStringStartsWith('http://localhost/pub/lib/', $jsFilename);
         $this->assertStringEndsWith('editor_plugin.js', $jsFilename);
 
         $this->assertInternalType('array', $settings['widget_placeholders']);

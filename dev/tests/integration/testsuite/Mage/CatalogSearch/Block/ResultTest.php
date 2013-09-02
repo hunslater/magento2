@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_CatalogSearch
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,8 +29,10 @@ class Mage_CatalogSearch_Block_ResultTest extends PHPUnit_Framework_TestCase
 {
     public function testSetListOrders()
     {
-        $layout = new Mage_Core_Model_Layout;
+        /** @var $layout Mage_Core_Model_Layout */
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
         $layout->addBlock('Mage_Core_Block_Text', 'head'); // The tested block is using head block
+        /** @var $block Mage_CatalogSearch_Block_Result */
         $block = $layout->addBlock('Mage_CatalogSearch_Block_Result', 'block');
         $childBlock = $layout->addBlock('Mage_Core_Block_Text', 'search_result_list', 'block');
 

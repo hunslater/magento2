@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Checkout
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -33,7 +33,7 @@ class Mage_Checkout_OnepageControllerTest extends Magento_Test_TestCase_Controll
     protected function setUp()
     {
         parent::setUp();
-        $quote = new Mage_Sales_Model_Quote();
+        $quote = Mage::getModel('Mage_Sales_Model_Quote');
         $quote->load('test01', 'reserved_order_id');
         Mage::getSingleton('Mage_Checkout_Model_Session')->setQuoteId($quote->getId());
     }
@@ -47,11 +47,11 @@ class Mage_Checkout_OnepageControllerTest extends Magento_Test_TestCase_Controll
         $html = $this->getResponse()->getBody();
         $this->assertContains('<li id="opc-payment"', $html);
         $this->assertContains('<dl class="sp-methods" id="checkout-payment-method-load">', $html);
-        $this->assertContains('<form id="co-billing-form" action="">', $html);
+        $this->assertSelectCount('form[id="co-billing-form"][action=""]', 1, $html);
     }
 
     /**
-     * Covers app/code/core/Mage/Checkout/Block/Onepage/Payment/Info.php
+     * Covers app/code/Mage/Checkout/Block/Onepage/Payment/Info.php
      */
     public function testProgressAction()
     {
@@ -80,6 +80,17 @@ class Mage_Checkout_OnepageControllerTest extends Magento_Test_TestCase_Controll
     public function testReviewAction()
     {
         $this->dispatch('checkout/onepage/review');
+        $this->assertContains('Place Order', $this->getResponse()->getBody());
         $this->assertContains('checkout-review', $this->getResponse()->getBody());
+    }
+
+    /**
+     * @magentoConfigFixture current_store general/locale/code de_DE
+     */
+    public function testReviewActionLocalization()
+    {
+        $this->dispatch('checkout/onepage/review');
+        $this->assertNotContains('Place Order', $this->getResponse()->getBody());
+        $this->assertContains('Bestellung aufgeben', $this->getResponse()->getBody());
     }
 }

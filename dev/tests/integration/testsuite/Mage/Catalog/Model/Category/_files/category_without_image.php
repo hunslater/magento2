@@ -21,14 +21,15 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * After installation system has two categories: root one with ID:1 and Default category with ID:2
  */
-$category = new Mage_Catalog_Model_Category();
+/** @var $category Mage_Catalog_Model_Category */
+$category = Mage::getModel('Mage_Catalog_Model_Category');
 $category->setName('Category Without Image 1')
     ->setParentId(2)
     ->setLevel(2)

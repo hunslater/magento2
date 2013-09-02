@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Magento_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Adminhtml_Block_Dashboard_GraphTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -34,13 +37,9 @@ class Mage_Adminhtml_Block_Dashboard_GraphTest extends PHPUnit_Framework_TestCas
 
     protected function setUp()
     {
-        $this->_block = new Mage_Adminhtml_Block_Dashboard_Graph;
+        parent::setUp();
+        $this->_block = Mage::app()->getLayout()->createBlock('Mage_Adminhtml_Block_Dashboard_Graph');
         $this->_block->setDataHelperName('Mage_Adminhtml_Helper_Dashboard_Order');
-    }
-
-    protected function tearDown()
-    {
-        $this->_block = null;
     }
 
     public function testGetChartUrl()

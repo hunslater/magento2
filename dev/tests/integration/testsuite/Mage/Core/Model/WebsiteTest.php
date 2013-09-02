@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,13 +34,8 @@ class Mage_Core_Model_WebsiteTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Core_Model_Website();
+        $this->_model = Mage::getModel('Mage_Core_Model_Website');
         $this->_model->load(1);
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testLoad()
@@ -65,7 +60,7 @@ class Mage_Core_Model_WebsiteTest extends PHPUnit_Framework_TestCase
     public function testSetGroupsAndStores()
     {
         /* Groups */
-        $expectedGroup = new Mage_Core_Model_Store_Group();
+        $expectedGroup = Mage::getModel('Mage_Core_Model_Store_Group');
         $expectedGroup->setId(123);
         $this->_model->setDefaultGroupId($expectedGroup->getId());
         $this->_model->setGroups(array($expectedGroup));
@@ -74,7 +69,7 @@ class Mage_Core_Model_WebsiteTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expectedGroup, reset($groups));
 
         /* Stores */
-        $expectedStore = new Mage_Core_Model_Store();
+        $expectedStore = Mage::getModel('Mage_Core_Model_Store');
         $expectedStore->setId(456);
         $expectedGroup->setDefaultStoreId($expectedStore->getId());
         $this->_model->setStores(array($expectedStore));
@@ -194,7 +189,7 @@ class Mage_Core_Model_WebsiteTest extends PHPUnit_Framework_TestCase
         );
 
         /* emulate admin store */
-        Mage::app()->getStore()->setId(Mage_Core_Model_App::ADMIN_STORE_ID);
+        Mage::app()->getStore()->setId(Mage_Core_Model_AppInterface::ADMIN_STORE_ID);
         $crud = new Magento_Test_Entity($this->_model, array('name' => 'new name'));
         $crud->testCrud();
     }

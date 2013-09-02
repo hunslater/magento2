@@ -21,13 +21,10 @@
  * @category    Magento
  * @package     Mage_Widget
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-/**
- * @group integrity
- */
 class Integrity_Mage_Widget_TemplateFilesTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -39,8 +36,10 @@ class Integrity_Mage_Widget_TemplateFilesTest extends PHPUnit_Framework_TestCase
      */
     public function testWidgetTemplates($class, $template)
     {
-        $block = new $class;
+        /** @var $blockFactory Mage_Core_Model_BlockFactory */
+        $blockFactory = Mage::getObjectManager()->get('Mage_Core_Model_BlockFactory');
         /** @var Mage_Core_Block_Template $block */
+        $block = $blockFactory->createBlock($class);
         $this->assertInstanceOf('Mage_Core_Block_Template', $block);
         $block->setTemplate((string)$template);
         $this->assertFileExists($block->getTemplateFile());
@@ -54,11 +53,13 @@ class Integrity_Mage_Widget_TemplateFilesTest extends PHPUnit_Framework_TestCase
     public function widgetTemplatesDataProvider()
     {
         $result = array();
-        $model = new Mage_Widget_Model_Widget;
+        /** @var $model Mage_Widget_Model_Widget */
+        $model = Mage::getModel('Mage_Widget_Model_Widget');
         foreach ($model->getWidgetsArray() as $row) {
-            $instance = new Mage_Widget_Model_Widget_Instance;
+            /** @var $instance Mage_Widget_Model_Widget_Instance */
+            $instance = Mage::getModel('Mage_Widget_Model_Widget_Instance');
             $config = $instance->setType($row['type'])->getWidgetConfig();
-            $class = Mage::getConfig()->getBlockClassName($row['type']);
+            $class = $row['type'];
             if (is_subclass_of($class, 'Mage_Core_Block_Template')) {
                 $templates = $config->xpath('/widgets/' . $row['code'] . '/parameters/template/values/*/value');
                 foreach ($templates as $template) {

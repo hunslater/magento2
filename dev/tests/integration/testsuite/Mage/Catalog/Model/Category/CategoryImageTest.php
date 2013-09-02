@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -35,37 +35,41 @@
 class Mage_Catalog_Model_Category_CategoryImageTest extends PHPUnit_Framework_TestCase
 {
     /** @var int */
-    protected static $_oldLogActive;
+    protected $_oldLogActive;
 
     /** @var string */
-    protected static $_oldExceptionFile;
+    protected $_oldExceptionFile;
 
     /** @var string */
-    protected static $_oldWriterModel;
+    protected $_oldWriterModel;
 
-    public static function setUpBeforeClass()
+    protected function setUp()
     {
-        parent::setUpBeforeClass();
-
-        self::$_oldLogActive = Mage::app()->getStore()->getConfig('dev/log/active');
-        self::$_oldExceptionFile = Mage::app()->getStore()->getConfig('dev/log/exception_file');
-        self::$_oldWriterModel = (string) Mage::getConfig()->getNode('global/log/core/writer_model');
+        $this->_oldLogActive = Mage::app()->getStore()->getConfig('dev/log/active');
+        $this->_oldExceptionFile = Mage::app()->getStore()->getConfig('dev/log/exception_file');
+        $this->_oldWriterModel = (string) Mage::getConfig()->getNode('global/log/core/writer_model');
     }
 
-    public static function tearDownAfterClass()
+    protected function tearDown()
     {
-        Mage::app()->getStore()->setConfig('dev/log/active', self::$_oldLogActive);
-        self::$_oldLogActive = null;
+        Mage::app()->getStore()->setConfig('dev/log/active', $this->_oldLogActive);
+        $this->_oldLogActive = null;
 
-        Mage::app()->getStore()->setConfig('dev/log/exception_file', self::$_oldExceptionFile);
-        self::$_oldExceptionFile = null;
+        Mage::app()->getStore()->setConfig('dev/log/exception_file', $this->_oldExceptionFile);
+        $this->_oldExceptionFile = null;
 
-        Mage::getConfig()->setNode('global/log/core/writer_model', self::$_oldWriterModel);
-        self::$_oldWriterModel = null;
+        Mage::getConfig()->setNode('global/log/core/writer_model', $this->_oldWriterModel);
+        $this->_oldWriterModel = null;
 
-        Stub_Mage_Catalog_Model_CategoryTest_Zend_Log_Writer_Stream::$exceptions = array();
-
-        parent::tearDownAfterClass();
+        /**
+         * @TODO: refactor this test
+         * Changing store configuration in such a way totally breaks the idea of application isolation.
+         * Class declaration in data fixture file is dumb too.
+         * Added a quick fix to be able run separate tests with "phpunit --filter testMethod"
+         */
+        if (class_exists('Stub_Mage_Catalog_Model_CategoryTest_Zend_Log_Writer_Stream', false)) {
+            Stub_Mage_Catalog_Model_CategoryTest_Zend_Log_Writer_Stream::$exceptions = array();
+        }
     }
 
     /**

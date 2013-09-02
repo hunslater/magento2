@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -41,29 +41,25 @@ class Mage_Catalog_Model_Layer_Filter_Price_AlgorithmAdvancedTest extends PHPUni
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Layer_Filter_Price_Algorithm();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+         $this->_model = Mage::getModel('Mage_Catalog_Model_Layer_Filter_Price_Algorithm');
     }
 
     /**
      * Prepare price filter model
      *
      * @param Magento_Test_Request|null $request
-     * @return void
      */
     protected function _prepareFilter($request = null)
     {
-        $layer = new Mage_Catalog_Model_Layer();
+        /** @var $layer Mage_Catalog_Model_Layer */
+        $layer = Mage::getModel('Mage_Catalog_Model_Layer');
         $layer->setCurrentCategory(4);
-        $layer->setState(new Mage_Catalog_Model_Layer_State());
-        $filter = new Mage_Catalog_Model_Layer_Filter_Price();
+        $layer->setState(Mage::getModel('Mage_Catalog_Model_Layer_State'));
+        /** @var $filter Mage_Catalog_Model_Layer_Filter_Price */
+        $filter = Mage::getModel('Mage_Catalog_Model_Layer_Filter_Price');
         $filter->setLayer($layer)->setAttributeModel(new Varien_Object(array('attribute_code' => 'price')));
         if (!is_null($request)) {
-            $filter->apply($request, new Mage_Core_Block_Text());
+            $filter->apply($request, Mage::app()->getLayout()->createBlock('Mage_Core_Block_Text'));
             $interval = $filter->getInterval();
             if ($interval) {
                 $this->_model->setLimits($interval[0], $interval[1]);

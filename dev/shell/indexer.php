@@ -20,13 +20,19 @@
  *
  * @category    Mage
  * @package     Mage_Shell
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-require_once '../../app/bootstrap.php';
-Mage::app('admin', 'store');
+require_once __DIR__ . '/../../app/bootstrap.php';
+$params = array(
+    Mage::PARAM_RUN_CODE => 'admin',
+    Mage::PARAM_RUN_TYPE => 'store',
+);
 
-/** @var $shell Mage_Index_Model_Shell */
-$shell = Mage::getModel('Mage_Index_Model_Shell', basename(__FILE__));
-$shell->run();
+$entryPoint = new Mage_Index_Model_EntryPoint_Shell(
+    basename(__FILE__),
+    new Mage_Index_Model_EntryPoint_Shell_ErrorHandler(),
+    new Mage_Core_Model_Config_Primary(BP, $params)
+);
+$entryPoint->processRequest();

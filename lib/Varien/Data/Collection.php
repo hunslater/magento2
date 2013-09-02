@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Data
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -100,12 +100,6 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
      * @var bool
      */
     protected $_isCollectionLoaded;
-
-    protected $_cacheKey;
-
-    protected $_cacheTags = array();
-
-    protected $_cacheLifetime = 86400;
 
     /**
      * Additional collection flags
@@ -272,7 +266,7 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
             return current($this->_items);
         }
 
-        return new $this->_itemObjectClass();
+        return Mage::getModel($this->_itemObjectClass);
     }
 
     /**
@@ -288,7 +282,7 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
             return end($this->_items);
         }
 
-        return new $this->_itemObjectClass();
+        return Mage::getModel($this->_itemObjectClass);
     }
 
     /**
@@ -431,6 +425,17 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
     }
 
     /**
+     * Remove all items from collection
+     *
+     * @return Varien_Data_Collection
+     */
+    public function removeAllItems()
+    {
+        $this->_items = array();
+        return $this;
+    }
+
+    /**
      * Clear collection
      *
      * @return Varien_Data_Collection
@@ -541,7 +546,6 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
      */
     function setItemObjectClass($className)
     {
-        $className = Mage::getConfig()->getModelClassName($className);
         /**
          * is_subclass_of($className, 'Varien_Object') - Segmentation fault in php 5.2.3
          */
@@ -559,7 +563,7 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
      */
     public function getNewEmptyItem()
     {
-        return new $this->_itemObjectClass();
+        return Mage::getModel($this->_itemObjectClass);
     }
 
     /**
@@ -751,33 +755,6 @@ class Varien_Data_Collection implements IteratorAggregate, Countable
     {
         $this->load();
         return count($this->_items);
-    }
-
-    public function setCacheKey($key)
-    {
-        $this->_cacheKey = $key;
-        return $this;
-    }
-
-    public function getCacheKey()
-    {
-        return $this->_cacheKey;
-    }
-
-    public function setCacheTags($tags)
-    {
-        $this->_cacheTags = $tags;
-        return $this;
-    }
-
-    public function getCacheTags()
-    {
-        return $this->_cacheTags;
-    }
-
-    public function getCacheLifetime()
-    {
-        return $this->_cacheLifetime;
     }
 
     /**

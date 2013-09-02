@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 $mediaDir = Mage::getSingleton('Mage_Catalog_Model_Product_Media_Config')->getBaseMediaPath();
-mkdir($mediaDir . '/m/a', 0777, true);
+$dir = $mediaDir . '/m/a';
+if (!is_dir($dir)) {
+    mkdir($dir, 0777, true);
+}
 copy(__DIR__ . '/magento_image.jpg', $mediaDir . '/m/a/magento_image.jpg');

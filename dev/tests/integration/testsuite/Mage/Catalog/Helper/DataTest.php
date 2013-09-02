@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_Catalog_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_helper = new Mage_Catalog_Helper_Data;
-    }
-
-    protected function tearDown()
-    {
-        $this->_helper = null;
+        $this->_helper = Mage::helper('Mage_Catalog_Helper_Data');
     }
 
     /**
@@ -47,7 +42,7 @@ class Mage_Catalog_Helper_DataTest extends PHPUnit_Framework_TestCase
      */
     public function testGetBreadcrumbPath()
     {
-        $category = new Mage_Catalog_Model_Category;
+        $category = Mage::getModel('Mage_Catalog_Model_Category');
         $category->load(5);
         Mage::register('current_category', $category);
 
@@ -66,7 +61,7 @@ class Mage_Catalog_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     public function testGetCategory()
     {
-        $category = new Mage_Catalog_Model_Category;
+        $category = Mage::getModel('Mage_Catalog_Model_Category');
         Mage::register('current_category', $category);
         try {
             $this->assertSame($category, $this->_helper->getCategory());
@@ -79,7 +74,7 @@ class Mage_Catalog_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     public function testGetProduct()
     {
-        $product = new Mage_Catalog_Model_Product;
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         Mage::register('current_product', $product);
         try {
             $this->assertSame($product, $this->_helper->getProduct());

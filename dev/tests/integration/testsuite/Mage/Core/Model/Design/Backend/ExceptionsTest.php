@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,15 +34,10 @@ class Mage_Core_Model_Design_Backend_ExceptionsTest extends PHPUnit_Framework_Te
 
     protected function setUp()
     {
-        $this->_model = new Mage_Core_Model_Design_Backend_Exceptions;
+        $this->_model = Mage::getModel('Mage_Core_Model_Design_Backend_Exceptions');
         $this->_model->setScope('default');
         $this->_model->setScopeId(0);
         $this->_model->setPath('design/theme/ua_regexp');
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     /**
@@ -52,8 +47,8 @@ class Mage_Core_Model_Design_Backend_ExceptionsTest extends PHPUnit_Framework_Te
     public function testSaveValueIsFormedNicely()
     {
         $value = array(
-            '1' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
-            '2' => array('search' => '/Firefox/', 'value' => 'default/default/blank')
+            '1' => array('search' => '/Opera/', 'value' => 'default/blank'),
+            '2' => array('search' => '/Firefox/', 'value' => 'default/blank')
         );
 
         $this->_model->setValue($value);
@@ -74,9 +69,9 @@ class Mage_Core_Model_Design_Backend_ExceptionsTest extends PHPUnit_Framework_Te
     public function testSaveEmptyValueIsSkipped()
     {
         $value = array(
-            '1' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
-            '2' => array('search' => '', 'value' => 'default/default/blank'),
-            '3' => array('search' => '/Firefox/', 'value' => 'default/default/blank')
+            '1' => array('search' => '/Opera/', 'value' => 'default/blank'),
+            '2' => array('search' => '', 'value' => 'default/blank'),
+            '3' => array('search' => '/Firefox/', 'value' => 'default/blank')
         );
 
         $this->_model->setValue($value);
@@ -109,19 +104,19 @@ class Mage_Core_Model_Design_Backend_ExceptionsTest extends PHPUnit_Framework_Te
     {
         $result = array(
             array(
-                array('search' => 'Opera', 'value' => 'default/default/blank'),
+                array('search' => 'Opera', 'value' => 'default/blank'),
                 '/Opera/i'
             ),
             array(
-                array('search' => '/Opera/', 'value' => 'default/default/blank'),
+                array('search' => '/Opera/', 'value' => 'default/blank'),
                 '/Opera/'
             ),
             array(
-                array('search' => '#iPad|iPhone#i', 'value' => 'default/default/blank'),
+                array('search' => '#iPad|iPhone#i', 'value' => 'default/blank'),
                 '#iPad|iPhone#i'
             ),
             array(
-                array('search' => 'Mozilla (3.6+)/Firefox', 'value' => 'default/default/blank'),
+                array('search' => 'Mozilla (3.6+)/Firefox', 'value' => 'default/blank'),
                 '/Mozilla \\(3\\.6\\+\\)\\/Firefox/i'
             )
         );
@@ -148,32 +143,28 @@ class Mage_Core_Model_Design_Backend_ExceptionsTest extends PHPUnit_Framework_Te
     {
         $result = array(
             array(array(
-                '1' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
-                '2' => array('search' => '/invalid_regexp(/', 'value' => 'default/default/blank'),
+                '1' => array('search' => '/Opera/', 'value' => 'default/blank'),
+                '2' => array('search' => '/invalid_regexp(/', 'value' => 'default/blank'),
             )),
             array(array(
-                '1' => array('search' => '/invalid_regexp', 'value' => 'default/default/blank'),
-                '2' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
+                '1' => array('search' => '/invalid_regexp', 'value' => 'default/blank'),
+                '2' => array('search' => '/Opera/', 'value' => 'default/blank'),
             )),
             array(array(
-                '1' => array('search' => 'invalid_regexp/iU', 'value' => 'default/default/blank'),
-                '2' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
+                '1' => array('search' => 'invalid_regexp/iU', 'value' => 'default/blank'),
+                '2' => array('search' => '/Opera/', 'value' => 'default/blank'),
             )),
             array(array(
-                '1' => array('search' => 'invalid_regexp#', 'value' => 'default/default/blank'),
-                '2' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
-            )),
-            array(array(
-                '1' => array('search' => '/Firefox/', 'value' => 'default/default/blank'),
-                '2' => array('search' => '/Opera/', 'value' => 'invalid_design'),
+                '1' => array('search' => 'invalid_regexp#', 'value' => 'default/blank'),
+                '2' => array('search' => '/Opera/', 'value' => 'default/blank'),
             )),
             array(array(
                 '1' => array('search' => '/Firefox/'),
-                '2' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
+                '2' => array('search' => '/Opera/', 'value' => 'default/blank'),
             )),
             array(array(
                 '1' => array('value' => 'default/default/blank'),
-                '2' => array('search' => '/Opera/', 'value' => 'default/default/blank'),
+                '2' => array('search' => '/Opera/', 'value' => 'default/blank'),
             ))
         );
 

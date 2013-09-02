@@ -21,12 +21,31 @@
  * @category    Magento
  * @package     Mage_Wishlist
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 class Mage_Wishlist_IndexControllerTest extends Magento_Test_TestCase_ControllerAbstract
 {
+    /**
+     * @var Mage_Customer_Model_Session
+     */
+    protected $_customerSession;
+
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->_customerSession = Mage::getModel('Mage_Customer_Model_Session');
+        $this->_customerSession->login('customer@example.com', 'password');
+    }
+
+    protected function tearDown()
+    {
+        $this->_customerSession->logout();
+        $this->_customerSession = null;
+        parent::tearDown();
+    }
+
     /**
      * Verify wishlist view action
      *
@@ -44,14 +63,27 @@ class Mage_Wishlist_IndexControllerTest extends Magento_Test_TestCase_Controller
      */
     public function testItemColumnBlock()
     {
-        $session = new Mage_Customer_Model_Session;
-        $session->login('customer@example.com', 'password');
         $this->dispatch('wishlist/index/index');
         $body = $this->getResponse()->getBody();
-        $this->assertStringMatchesFormat('%A<img src="%Asmall_image.jpg" %A alt="Simple Product"%A/>%A', $body);
-        $this->assertStringMatchesFormat('%Afunction addWItemToCart(itemId)%A', $body);
-        $this->assertStringMatchesFormat('%Aonclick="addWItemToCart(%d);"%A', $body);
-        $this->assertStringMatchesFormat('%A<textarea name="description[%d]"%A', $body);
-        $this->assertStringMatchesFormat('%A<button%Aonclick="addAllWItemsToCart()"%A', $body);
+        $this->assertSelectCount('img[src~="small_image.jpg"][alt="Simple Product"]', 1, $body);
+        $this->assertSelectCount('textarea[name~="description"]', 1, $body);
+    }
+
+    /**
+     * @magentoDataFixture Mage/Catalog/_files/product_simple_xss.php
+     * @magentoDataFixture Mage/Customer/_files/customer.php
+     */
+    public function testAddActionProductNameXss()
+    {
+        $this->dispatch('wishlist/index/add/product/1?nocookie=1');
+        $messages = $this->_customerSession->getMessages()->getItems();
+        $isProductNamePresent = false;
+        foreach ($messages as $message) {
+            if (strpos($message->getCode(), '&lt;script&gt;alert(&quot;xss&quot;);&lt;/script&gt;') !== false) {
+                $isProductNamePresent = true;
+            }
+            $this->assertNotContains('<script>alert("xss");</script>', $message->getCode());
+        }
+        $this->assertTrue($isProductNamePresent, 'Product name was not found in session messages');
     }
 }

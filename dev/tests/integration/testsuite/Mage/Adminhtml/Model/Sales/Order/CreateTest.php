@@ -21,10 +21,13 @@
  * @category    Magento
  * @package     Mage_Adminhtml
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
+/**
+ * @magentoAppArea adminhtml
+ */
 class Mage_Adminhtml_Model_Sales_Order_CreateTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -36,12 +39,9 @@ class Mage_Adminhtml_Model_Sales_Order_CreateTest extends PHPUnit_Framework_Test
 
     public function setUp()
     {
-        $this->_model = new Mage_Adminhtml_Model_Sales_Order_Create();
-    }
+        parent::setUp();
 
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Adminhtml_Model_Sales_Order_Create');
     }
 
     /**
@@ -50,7 +50,8 @@ class Mage_Adminhtml_Model_Sales_Order_CreateTest extends PHPUnit_Framework_Test
      */
     public function testInitFromOrderShippingAddressSameAsBillingWhenEmpty()
     {
-        $order = new Mage_Sales_Model_Order();
+        /** @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('Mage_Sales_Model_Order');
         $order->loadByIncrementId('100000001');
         $this->assertFalse($order->getShippingAddress());
 
@@ -67,7 +68,8 @@ class Mage_Adminhtml_Model_Sales_Order_CreateTest extends PHPUnit_Framework_Test
      */
     public function testInitFromOrderShippingAddressSameAsBillingWhenSame()
     {
-        $order = new Mage_Sales_Model_Order();
+        /** @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('Mage_Sales_Model_Order');
         $order->loadByIncrementId('100000001');
 
         $this->assertNull($order->getShippingAddress()->getSameAsBilling());
@@ -85,7 +87,8 @@ class Mage_Adminhtml_Model_Sales_Order_CreateTest extends PHPUnit_Framework_Test
      */
     public function testInitFromOrderShippingAddressSameAsBillingWhenDifferent()
     {
-        $order = new Mage_Sales_Model_Order();
+        /** @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('Mage_Sales_Model_Order');
         $order->loadByIncrementId('100000001');
 
         $this->assertNull($order->getShippingAddress()->getSameAsBilling());
@@ -94,5 +97,53 @@ class Mage_Adminhtml_Model_Sales_Order_CreateTest extends PHPUnit_Framework_Test
         $this->_model->initFromOrder($order);
 
         $this->assertFalse($order->getShippingAddress()->getSameAsBilling());
+    }
+
+    /**
+     * @magentoDataFixture Mage/Sales/_files/order_paid_with_verisign.php
+     */
+    public function testInitFromOrderCcInformationDeleted()
+    {
+        /** @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('Mage_Sales_Model_Order');
+        $order->loadByIncrementId('100000001');
+
+        $payment = $order->getPayment();
+        $this->assertEquals('5', $payment->getCcExpMonth());
+        $this->assertEquals('2016', $payment->getCcExpYear());
+        $this->assertEquals('AE', $payment->getCcType());
+        $this->assertEquals('0005', $payment->getCcLast4());
+
+        Mage::unregister('rule_data');
+        $payment = $this->_model->initFromOrder($order)->getQuote()->getPayment();
+
+        $this->assertNull($payment->getCcExpMonth());
+        $this->assertNull($payment->getCcExpYear());
+        $this->assertNull($payment->getCcType());
+        $this->assertNull($payment->getCcLast4());
+    }
+
+    /**
+     * @magentoDataFixture Mage/Sales/_files/order_paid_with_saved_cc.php
+     */
+    public function testInitFromOrderSavedCcInformationNotDeleted()
+    {
+        /** @var $order Mage_Sales_Model_Order */
+        $order = Mage::getModel('Mage_Sales_Model_Order');
+        $order->loadByIncrementId('100000001');
+
+        $payment = $order->getPayment();
+        $this->assertEquals('5', $payment->getCcExpMonth());
+        $this->assertEquals('2016', $payment->getCcExpYear());
+        $this->assertEquals('AE', $payment->getCcType());
+        $this->assertEquals('0005', $payment->getCcLast4());
+
+        Mage::unregister('rule_data');
+        $payment = $this->_model->initFromOrder($order)->getQuote()->getPayment();
+
+        $this->assertEquals('5', $payment->getCcExpMonth());
+        $this->assertEquals('2016', $payment->getCcExpYear());
+        $this->assertEquals('AE', $payment->getCcType());
+        $this->assertEquals('0005', $payment->getCcLast4());
     }
 }

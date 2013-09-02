@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -71,7 +71,7 @@ class Mage_Backend_Model_Menu_Item_ValidatorTest extends PHPUnit_Framework_TestC
         'id' => 'item',
         'title' => 'Item Title',
         'action' => '/system/config',
-        'resource' => 'system/config',
+        'resource' => 'Mage_Backend::system_config',
         'dependsOnModule' => 'Mage_Backend',
         'dependsOnConfig' => 'system/config/isEnabled',
         'toolTip' => 'Item tooltip',
@@ -79,19 +79,6 @@ class Mage_Backend_Model_Menu_Item_ValidatorTest extends PHPUnit_Framework_TestC
 
     public function setUp()
     {
-        $this->_aclMock = $this->getMock('Mage_Backend_Model_Auth_Session', array(), array(), '', false);
-        $this->_factoryMock = $this->getMock('Mage_Backend_Model_Menu_Factory');
-        $this->_helperMock = $this->getMock('Mage_Backend_Helper_Data', array(), array(), '', false);
-        $this->_urlModelMock = $this->getMock("Mage_Backend_Model_Url", array(), array(), '', false);
-        $this->_appConfigMock = $this->getMock('Mage_Core_Model_Config', array(), array(), '', false);
-        $this->_storeConfigMock = $this->getMock('Mage_Core_Model_Store_Config');
-
-        $this->_params['acl'] = $this->_aclMock;
-        $this->_params['menuFactory'] = $this->_factoryMock;
-        $this->_params['module'] = $this->_helperMock;
-        $this->_params['urlModel'] = $this->_urlModelMock;
-        $this->_params['appConfig'] = $this->_appConfigMock;
-        $this->_params['storeConfig'] = $this->_storeConfigMock;
         $this->_model = new Mage_Backend_Model_Menu_Item_Validator();
     }
 
@@ -115,43 +102,9 @@ class Mage_Backend_Model_Menu_Item_ValidatorTest extends PHPUnit_Framework_TestC
     public function requiredParamsProvider()
     {
         return array(
-            array('acl'),
-            array('appConfig'),
-            array('menuFactory'),
-            array('urlModel'),
-            array('storeConfig'),
             array('id'),
             array('title'),
-            array('module')
-        );
-    }
-
-    /**
-     * @param string $typedParam
-     * @throws InvalidArgumentException
-     * @expectedException InvalidArgumentException
-     * @dataProvider requiredParamsProvider
-     */
-    public function testValidateWithWrongTypesThrowsException($typedParam)
-    {
-        try{
-            $this->_params[$typedParam] = new Varien_Object();
-            $this->_model->validate($this->_params);
-        } catch (InvalidArgumentException $e) {
-            $this->assertContains($typedParam, $e->getMessage());
-            throw $e;
-        }
-    }
-
-    public function typedParamsProvider()
-    {
-        return array(
-            array('acl'),
-            array('appConfig'),
-            array('menuFactory'),
-            array('urlModel'),
-            array('storeConfig'),
-            array('moduleHelper')
+            array('resource'),
         );
     }
 
@@ -225,18 +178,21 @@ class Mage_Backend_Model_Menu_Item_ValidatorTest extends PHPUnit_Framework_TestC
                     array(
                         'id' => 'item1',
                         'title' => 'Item 1',
-                        'action' => 'adminhtml/controller/item1'
+                        'action' => 'adminhtml/controller/item1',
+                        'resource' => 'Namespace_Module::item1'
                     ),
                     array(
                         'id' => 'item2',
                         'title' => 'Item 2',
-                        'action' => 'adminhtml/controller/item2'
+                        'action' => 'adminhtml/controller/item2',
+                        'resource' => 'Namespace_Module::item2'
                     )
                 ),
                 array(
                     'id' => 'item1',
                     'title' => 'Item 1',
-                    'action' => 'adminhtml/controller/item1'
+                    'action' => 'adminhtml/controller/item1',
+                    'resource' => 'Namespace_Module::item1'
                 )
             ),
             array(
@@ -244,18 +200,21 @@ class Mage_Backend_Model_Menu_Item_ValidatorTest extends PHPUnit_Framework_TestC
                     array(
                         'id' => 'Namespace_Module::item1',
                         'title' => 'Item 1',
-                        'action' => 'adminhtml/controller/item1'
+                        'action' => 'adminhtml/controller/item1',
+                        'resource' => 'Namespace_Module::item1'
                     ),
                     array(
                         'id' => 'Namespace_Module::item2',
                         'title' => 'Item 2',
-                        'action' => 'adminhtml/controller/item2'
+                        'action' => 'adminhtml/controller/item2',
+                        'resource' => 'Namespace_Module::item1'
                     )
                 ),
                 array(
                     'id' => 'Namespace_Module::item1',
                     'title' => 'Item 1',
-                    'action' => 'adminhtml/controller/item1'
+                    'action' => 'adminhtml/controller/item1',
+                    'resource' => 'Namespace_Module::item1'
                 )
             )
         );
@@ -284,6 +243,14 @@ class Mage_Backend_Model_Menu_Item_ValidatorTest extends PHPUnit_Framework_TestC
     public function testValidateParamValidatesPrimitiveValues()
     {
         $this->_model->validateParam('toolTip', '/:');
+    }
+
+    /**
+     * Resources belonging to a module within a compound namespace must pass the validation
+     */
+    public function testValidateParamResourceCompoundModuleNamespace()
+    {
+        $this->_model->validateParam('resource', 'TheCompoundNamespace_TheCompoundModule::resource');
     }
 }
 

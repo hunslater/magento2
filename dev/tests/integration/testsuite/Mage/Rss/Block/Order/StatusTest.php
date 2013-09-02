@@ -21,7 +21,7 @@
  * @category    Mage
  * @package     Mage_Rss
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,7 +29,10 @@ class Mage_Rss_Block_Order_StatusTest extends PHPUnit_Framework_TestCase
 {
     public function testToHtml()
     {
-        $block = new Mage_Rss_Block_Order_Status;
+        if (Magento_Test_Helper_Bootstrap::getInstance()->getDbVendorName() != 'mysql') {
+            $this->markTestIncomplete('bug: MAGETWO-4227');
+        }
+        $block = Mage::app()->getLayout()->createBlock('Mage_Rss_Block_Order_Status');
         $this->assertEmpty($block->toHtml());
 
         $uniqid = uniqid();

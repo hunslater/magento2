@@ -20,7 +20,7 @@
  *
  * @category   Varien
  * @package    Varien_Simplexml
- * @copyright  Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright  Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -501,20 +501,17 @@ class Varien_Simplexml_Config
     /**
      * Imports XML string
      *
-     * @param  string $string
+     * @param string $string
      * @return boolean
      */
     public function loadString($string)
     {
-        if (is_string($string)) {
+        if (!empty($string)) {
             $xml = simplexml_load_string($string, $this->_elementClass);
-
             if ($xml instanceof Varien_Simplexml_Element) {
                 $this->_xml = $xml;
                 return true;
             }
-        } else {
-            Mage::logException(new Exception('"$string" parameter for simplexml_load_string is not a string'));
         }
         return false;
     }
@@ -601,4 +598,14 @@ class Varien_Simplexml_Config
         return $this;
     }
 
+    /**
+     * Cleanup circular references
+     *
+     * Destructor should be called explicitly in order to work around the PHP bug
+     * https://bugs.php.net/bug.php?id=62468
+     */
+    public function __destruct()
+    {
+        $this->_xml = null;
+    }
 }

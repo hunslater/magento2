@@ -21,14 +21,14 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
  * Test class for Mage_Backend_Model_Auth.
  *
- * @group module:Mage_Backend
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
 {
@@ -39,12 +39,10 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_model = new Mage_Backend_Model_Auth();
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        parent::setUp();
+        Mage::app()->loadArea(Mage_Core_Model_App_Area::AREA_ADMINHTML);
+        $this->_model = Mage::getModel('Mage_Backend_Model_Auth');
+        Mage::getConfig()->setCurrentAreaCode(Mage::helper('Mage_Backend_Helper_Data')->getAreaCode());
     }
 
     public function testMenuItemManipulation()
@@ -55,18 +53,20 @@ class Mage_Backend_Model_MenuTest extends PHPUnit_Framework_TestCase
         $itemFactory = Mage::getModel('Mage_Backend_Model_Menu_Item_Factory');
 
         // Add new item in top level
-        $menu->add($itemFactory->createFromArray(array(
+        $menu->add($itemFactory->create(array(
             'id' => 'Mage_Backend::system2',
             'title' => 'Extended System',
             'module' => 'Mage_Backend',
+            'resource' => 'Mage_Backend::system2'
         )));
 
          //Add submenu
-        $menu->add($itemFactory->createFromArray(array(
+        $menu->add($itemFactory->create(array(
             'id' => 'Mage_Backend::system2_acl',
             'title' => 'Acl',
             'module' => 'Mage_Backend',
-            'action' => 'admin/backend/acl/index'
+            'action' => 'admin/backend/acl/index',
+            'resource' => 'Mage_Backend::system2_acl',
         )), 'Mage_Backend::system2');
 
         // Modify existing menu item

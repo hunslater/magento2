@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_SalesRule
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -81,7 +81,6 @@ return array (
     'base_weee_tax_applied_amount' => '0.0000',
     'base_weee_tax_applied_row_amnt' => '0.0000',
     'event_id' => NULL,
-    'giftregistry_item_id' => NULL,
     'gw_id' => NULL,
     'gw_base_price' => NULL,
     'gw_price' => NULL,

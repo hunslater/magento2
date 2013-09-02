@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_CatalogInventory
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_CatalogInventory_Model_Stock_ItemTest extends PHPUnit_Framework_TestC
 
     protected function setUp()
     {
-        $this->_model = new Mage_CatalogInventory_Model_Stock_Item;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_CatalogInventory_Model_Stock_Item');
     }
 
     /**
@@ -47,7 +42,8 @@ class Mage_CatalogInventory_Model_Stock_ItemTest extends PHPUnit_Framework_TestC
      */
     public static function simpleProductFixture()
     {
-        $product = new Mage_Catalog_Model_Product();
+        /** @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('Mage_Catalog_Model_Product');
         $product->setTypeId('simple')
             ->setId(1)
             ->setAttributeSetId(4)
@@ -57,6 +53,31 @@ class Mage_CatalogInventory_Model_Stock_ItemTest extends PHPUnit_Framework_TestC
             ->setVisibility(Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
             ->setStatus(Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
             ->save();
+    }
+
+    /**
+     * @magentoDataFixture simpleProductFixture
+     */
+    public function testSaveWithNullQty()
+    {
+        $this->_model
+            ->setProductId(1)
+            ->setTypeId(Mage_Catalog_Model_Product_Type::DEFAULT_TYPE)
+            ->setStockId(Mage_CatalogInventory_Model_Stock::DEFAULT_STOCK_ID)
+            ->setQty(null);
+        $this->_model->save();
+
+        $this->_model->setQty(2);
+        $this->_model->save();
+        $this->assertEquals('2.0000', $this->_model->load(1)->getQty());
+
+        $this->_model->setQty(0);
+        $this->_model->save();
+        $this->assertEquals('0.0000', $this->_model->load(1)->getQty());
+
+        $this->_model->setQty(null);
+        $this->_model->save();
+        $this->assertEquals(null, $this->_model->load(1)->getQty());
     }
 
     /**

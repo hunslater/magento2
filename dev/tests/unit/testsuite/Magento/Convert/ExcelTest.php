@@ -20,7 +20,7 @@
  *
  * @category    Magento
  * @package     unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -52,7 +52,7 @@ class Magento_Convert_ExcelTest extends PHPUnit_Framework_TestCase
     /**
      * Callback method
      *
-     * @param  array $row
+     * @param array $row
      * @return array
      */
     public function callbackMethod($row)
@@ -97,15 +97,14 @@ class Magento_Convert_ExcelTest extends PHPUnit_Framework_TestCase
      */
     protected function _writeFile($callback = false)
     {
-        $ioFile = new Varien_Io_File();
+        $adapter = new Magento_Filesystem_Adapter_Local();
+        $filesystem = new Magento_Filesystem($adapter);
 
-        $path = Magento_Test_Environment::getInstance()->getTmpDir();
         $name = md5(microtime());
-        $file = $path . DIRECTORY_SEPARATOR . $name . '.xml';
+        $file = TESTS_TEMP_DIR . DIRECTORY_SEPARATOR . $name . '.xml';
 
-        $ioFile->open(array('path' => $path));
-        $ioFile->streamOpen($file, 'w+');
-        $ioFile->streamLock(true);
+        $stream = $filesystem->createAndOpenStream($file, 'w+', TESTS_TEMP_DIR);
+        $stream->lock(true);
 
         if (!$callback) {
             $convert = new Magento_Convert_Excel(new ArrayIterator($this->_testData));
@@ -113,9 +112,9 @@ class Magento_Convert_ExcelTest extends PHPUnit_Framework_TestCase
             $convert = new Magento_Convert_Excel(new ArrayIterator($this->_testData), array($this, 'callbackMethod'));
         }
 
-        $convert->write($ioFile);
-        $ioFile->streamUnlock();
-        $ioFile->streamClose();
+        $convert->write($stream);
+        $stream->unlock();
+        $stream->close();
 
         return $file;
     }

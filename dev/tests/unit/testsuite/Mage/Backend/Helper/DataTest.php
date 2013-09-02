@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -39,8 +39,10 @@ class Mage_Backend_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_configMock = $this->getMock('Mage_Core_Model_Config', array(), array(), '', false);
-        $this->_helper = new Mage_Backend_Helper_Data(array('config' => $this->_configMock));
+        $this->_configMock = $this->getMock('Mage_Core_Model_Config', array(), array(), '', false, false);
+        $this->_helper = new Mage_Backend_Helper_Data($this->_configMock,
+            $this->getMock('Mage_Core_Helper_Context', array(), array(), '', false, false)
+        );
     }
 
     public function testGetAreaFrontNameReturnsDefaultValueWhenCustomNotSet()

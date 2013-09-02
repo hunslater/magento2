@@ -21,12 +21,12 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * @group module:Mage_Backend
+ * @magentoAppArea adminhtml
  */
 class Mage_Backend_Helper_DataTest extends PHPUnit_Framework_TestCase
 {
@@ -42,6 +42,9 @@ class Mage_Backend_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        parent::setUp();
+
+        Mage::getConfig()->setCurrentAreaCode(Mage_Core_Model_App_Area::AREA_ADMINHTML);
         $this->_helper = Mage::helper('Mage_Backend_Helper_Data');
     }
 
@@ -49,6 +52,7 @@ class Mage_Backend_Helper_DataTest extends PHPUnit_Framework_TestCase
     {
         $this->_helper = null;
         $this->_auth = null;
+        Mage::getConfig()->setCurrentAreaCode(null);
     }
 
     /**
@@ -103,7 +107,7 @@ class Mage_Backend_Helper_DataTest extends PHPUnit_Framework_TestCase
          */
         Mage::getSingleton('Mage_Backend_Model_Url')->turnOffSecretKey();
 
-        $auth = new Mage_Backend_Model_Auth();
+        $auth = Mage::getModel('Mage_Backend_Model_Auth');
         $auth->login(Magento_Test_Bootstrap::ADMIN_NAME, Magento_Test_Bootstrap::ADMIN_PASSWORD);
         $this->assertEquals(1, $this->_helper->getCurrentUserId());
 

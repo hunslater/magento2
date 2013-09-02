@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Newsletter
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -37,46 +37,60 @@ class Mage_Newsletter_Model_TemplateTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Newsletter_Model_Template;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
-    }
-
-    public function getProcessedTemplateDataProvider()
-    {
-        return array(
-            'install'        => array('install',   'default',      'default/default/default'),
-            'backend'        => array('adminhtml', 'admin',        'default/default/default'),
-            'frontend'       => array('frontend',  'default',      'default/iphone/default'),
-            'frontend store' => array('frontend',  'fixturestore', 'default/default/blue'),
-        );
+        $this->_model = Mage::getModel('Mage_Newsletter_Model_Template');
     }
 
     /**
-     * @magentoConfigFixture                    install/design/theme/full_name   default/default/default
-     * @magentoConfigFixture                    adminhtml/design/theme/full_name default/default/default
-     * @magentoConfigFixture current_store      design/theme/full_name           default/iphone/default
-     * @magentoConfigFixture fixturestore_store design/theme/full_name           default/default/blue
+     * @magentoConfigFixture                    install/design/theme/full_name   default/basic
+     * @magentoConfigFixture                    adminhtml/design/theme/full_name default/basic
+     * @magentoConfigFixture current_store      design/theme/full_name           default/iphone
+     * @magentoConfigFixture fixturestore_store design/theme/full_name           default/blank
      * @magentoAppIsolation  enabled
      * @dataProvider         getProcessedTemplateDataProvider
      */
     public function testGetProcessedTemplate($area, $store, $design)
     {
         $this->markTestIncomplete('Test partially fails bc of MAGETWO-557.');
-        $this->_model->setTemplateText('{{skin url="Mage_Page::favicon.ico"}}');
-        $this->assertStringEndsWith('skin/frontend/default/default/default/en_US/Mage_Page/favicon.ico',
+        $this->_model->setTemplateText('{{view url="Mage_Page::favicon.ico"}}');
+        $this->assertStringEndsWith('theme/frontend/default/demo/en_US/Mage_Page/favicon.ico',
             $this->_model->getProcessedTemplate()
         );
         $this->_model->emulateDesign($store, $area);
-        $expectedTemplateText = "skin/{$area}/{$design}/en_US/Mage_Page/favicon.ico";
+        $expectedTemplateText = "theme/{$area}/{$design}/en_US/Mage_Page/favicon.ico";
         $this->assertStringEndsWith($expectedTemplateText, $this->_model->getProcessedTemplate());
         $this->_model->revertDesign();
     }
 
-    public function getIsValidToSendDataProvider()
+    /**
+     * @return array
+     */
+    public function getProcessedTemplateDataProvider()
+    {
+        return array(
+            'install'        => array('install',   'default',      'default/demo'),
+            'backend'        => array('adminhtml', 'admin',        'default/basic'),
+            'frontend'       => array('frontend',  'default',      'default/iphone'),
+            'frontend store' => array('frontend',  'fixturestore', 'default/blank'),
+        );
+    }
+
+    /**
+     * @magentoConfigFixture current_store system/smtp/disable 0
+     * @magentoAppIsolation enabled
+     * @dataProvider isValidToSendDataProvider
+     */
+    public function testIsValidToSend($senderEmail, $senderName, $subject, $isValid)
+    {
+        $this->_model->setTemplateSenderEmail($senderEmail)
+            ->setTemplateSenderName($senderName)
+            ->setTemplateSubject($subject);
+        $this->assertSame($isValid, $this->_model->isValidForSend());
+    }
+
+    /**
+     * @return array
+     */
+    public function isValidToSendDataProvider()
     {
         return array(
             array('john.doe@example.com', 'john.doe', 'Test Subject', true),
@@ -88,18 +102,5 @@ class Mage_Newsletter_Model_TemplateTest extends PHPUnit_Framework_TestCase
             array('', 'john.doe', '', false),
             array('', '', '', false),
         );
-    }
-
-    /**
-     * @magentoConfigFixture current_store system/smtp/disable 0
-     * @magentoAppIsolation enabled
-     * @dataProvider getIsValidToSendDataProvider
-     */
-    public function testIsValidToSend($senderEmail, $senderName, $subject, $isValid)
-    {
-        $this->_model->setTemplateSenderEmail($senderEmail)
-            ->setTemplateSenderName($senderName)
-            ->setTemplateSubject($subject);
-        $this->assertSame($isValid, $this->_model->isValidForSend());
     }
 }

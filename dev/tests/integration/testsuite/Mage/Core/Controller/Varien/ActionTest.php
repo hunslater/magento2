@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Core
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,15 +34,17 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        Mage::getConfig();
+        Mage::getDesign()->setArea(Mage_Core_Model_App_Area::AREA_FRONTEND)->setDefaultDesignTheme();
+        $arguments = array(
+            'request'  => new Magento_Test_Request(),
+            'response' => new Magento_Test_Response(),
+        );
+        $context = Mage::getObjectManager()->create('Mage_Core_Controller_Varien_Action_Context', $arguments);
         $this->_model = $this->getMockForAbstractClass(
             'Mage_Core_Controller_Varien_Action',
-            array(new Magento_Test_Request(), new Magento_Test_Response())
+            array($context, 'frontend')
         );
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
     }
 
     public function testHasAction()
@@ -93,8 +95,9 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
      */
     public function testGetLayout($controllerClass, $expectedArea)
     {
+        Mage::getConfig()->setCurrentAreaCode($expectedArea);
         /** @var $controller Mage_Core_Controller_Varien_Action */
-        $controller = new $controllerClass(new Magento_Test_Request(), new Magento_Test_Response());
+        $controller = Mage::getObjectManager()->create($controllerClass, array('areaCode' => $expectedArea));
         $this->assertInstanceOf('Mage_Core_Model_Layout', $controller->getLayout());
         $this->assertEquals($expectedArea, $controller->getLayout()->getArea());
     }
@@ -149,6 +152,9 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @return array
+     */
     public function addActionLayoutHandlesDataProvider()
     {
         return array(
@@ -184,6 +190,9 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @return array
+     */
     public function addActionLayoutHandlesInheritedDataProvider()
     {
         return array(
@@ -237,8 +246,19 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
         $request = new Magento_Test_Request();
         $request->setDispatched();
 
+        $arguments = array(
+            'request'  => $request,
+            'response' => new Magento_Test_Response(),
+        );
+        $context = Mage::getObjectManager()->create('Mage_Core_Controller_Varien_Action_Context', $arguments);
+
         /* Area-specific controller is used because area must be known at the moment of loading the design */
-        $this->_model = new Mage_Core_Controller_Front_Action($request, new Magento_Test_Response());
+        $this->_model = Mage::getObjectManager()->create('Mage_Core_Controller_Front_Action',
+            array(
+                'context'  => $context,
+                'areaCode' => 'frontend'
+            )
+        );
         $this->_model->dispatch('not_exists');
 
         $this->assertFalse($request->isDispatched());
@@ -263,37 +283,67 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @magentoConfigFixture               install/design/theme/full_name   default/default/default
-     * @magentoConfigFixture               adminhtml/design/theme/full_name default/default/default
-     * @magentoConfigFixture current_store design/theme/full_name           default/iphone/default
-     * @magentoAppIsolation  enabled
-     *
+     * @magentoConfigFixture install/design/theme/full_name default/basic
+     * @magentoConfigFixture frontend/design/theme/full_name default/demo
+     * @magentoConfigFixture adminhtml/design/theme/full_name default/basic
+     * @magentoAppIsolation enabled
      * @dataProvider controllerAreaDesignDataProvider
      *
      * @param string $controllerClass
      * @param string $expectedArea
      * @param string $expectedStore
      * @param string $expectedDesign
+     * @param string $context
      */
-    public function testPreDispatch($controllerClass, $expectedArea, $expectedStore, $expectedDesign)
+    public function testPreDispatch($controllerClass, $expectedArea, $expectedStore, $expectedDesign, $context)
     {
+        Mage::getConfig()->setCurrentAreaCode($expectedArea);
+        Mage::app()->loadArea($expectedArea);
+
         /** @var $controller Mage_Core_Controller_Varien_Action */
-        $controller = new $controllerClass(new Magento_Test_Request(), new Magento_Test_Response());
+        $context = Mage::getObjectManager()->create($context, array('response' => new Magento_Test_Response()));
+        $controller = Mage::getObjectManager()->create($controllerClass,
+            array(
+                'areaCode' => $expectedArea,
+                'context' => $context,
+            )
+        );
         $controller->preDispatch();
+
         $this->assertEquals($expectedArea, Mage::getDesign()->getArea());
         $this->assertEquals($expectedStore, Mage::app()->getStore()->getCode());
         if ($expectedDesign) {
-            $this->assertEquals($expectedDesign, Mage::getDesign()->getDesignTheme());
+            $this->assertEquals($expectedDesign, Mage::getDesign()->getDesignTheme()->getThemePath());
         }
     }
 
+    /**
+     * @return array
+     */
     public function controllerAreaDesignDataProvider()
     {
         return array(
-            'install'  => array('Mage_Install_Controller_Action',    'install',   'default', 'default/default/default'),
-            'frontend' => array('Mage_Core_Controller_Front_Action', 'frontend',  'default', 'default/iphone/default'),
-            'backend'  => array('Mage_Adminhtml_Controller_Action',  'adminhtml', 'admin',   'default/default/default'),
-            'api'      => array('Mage_Api_Controller_Action',        'adminhtml', 'admin',   ''),
+            'install' => array(
+                'Mage_Install_Controller_Action',
+                'install',
+                'default',
+                'default/basic',
+                'Mage_Core_Controller_Varien_Action_Context'
+            ),
+            'frontend' => array(
+                'Mage_Core_Controller_Front_Action',
+                'frontend',
+                'default',
+                'default/demo',
+                'Mage_Core_Controller_Varien_Action_Context'
+            ),
+            'backend' => array(
+                'Mage_Adminhtml_Controller_Action',
+                'adminhtml',
+                'admin',
+                'default/basic',
+                'Mage_Backend_Controller_Context'
+            ),
         );
     }
 
@@ -312,6 +362,9 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($caughtException, $message);
     }
 
+    /**
+     * @return array
+     */
     public function controllerAreaSetDataProvider()
     {
         return array(
@@ -332,9 +385,8 @@ class Mage_Core_Controller_Varien_ActionTest extends PHPUnit_Framework_TestCase
     public function testSetCurrentArea($controllerClass, $setArea, $expectedArea)
     {
         /** @var $controller Mage_Core_Controller_Varien_Action */
-        $controller = new $controllerClass(new Magento_Test_Request(), new Magento_Test_Response());
+        $controller = Mage::getObjectManager()->create($controllerClass, array('areaCode' => 'random_area'));
         $this->assertInstanceOf($controllerClass, $controller->setCurrentArea($setArea));
         $this->assertEquals($expectedArea, $controller->getLayout()->getArea());
     }
-
 }

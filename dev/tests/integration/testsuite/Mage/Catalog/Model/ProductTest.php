@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_Catalog
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -42,19 +42,17 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_model = new Mage_Catalog_Model_Product;
-    }
-
-    protected function tearDown()
-    {
-        $this->_model = null;
+        $this->_model = Mage::getModel('Mage_Catalog_Model_Product');
     }
 
     public static function tearDownAfterClass()
     {
+        /** @var Mage_Catalog_Model_Product_Media_Config $config */
         $config = Mage::getSingleton('Mage_Catalog_Model_Product_Media_Config');
-        Varien_Io_File::rmdirRecursive($config->getBaseMediaPath());
-        Varien_Io_File::rmdirRecursive($config->getBaseTmpMediaPath());
+
+        $filesystem = Mage::getObjectManager()->get('Magento_Filesystem');
+        $filesystem->delete($config->getBaseMediaPath());
+        $filesystem->delete($config->getBaseTmpMediaPath());
     }
 
     public function testCanAffectOptions()
@@ -65,11 +63,12 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @magentoDbIsolation enabled
      * @magentoAppIsolation enabled
      */
     public function testCRUD()
     {
-        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_App::ADMIN_STORE_ID));
+        Mage::app()->setCurrentStore(Mage::app()->getStore(Mage_Core_Model_AppInterface::ADMIN_STORE_ID));
         $this->_model->setTypeId('simple')->setAttributeSetId(4)
             ->setName('Simple Product')->setSku(uniqid())->setPrice(10)
             ->setMetaTitle('meta title')->setMetaKeyword('meta keyword')->setMetaDescription('meta description')
@@ -90,14 +89,39 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
 
     public function testAddImageToMediaGallery()
     {
-            $this->_model->addImageToMediaGallery(dirname(dirname(__FILE__)) . '/_files/magento_image.jpg');
-            $gallery = $this->_model->getData('media_gallery');
-            $this->assertNotEmpty($gallery);
-            $this->assertTrue(isset($gallery['images'][0]['file']));
-            $this->assertStringStartsWith('/m/a/magento_image', $gallery['images'][0]['file']);
-            $this->assertTrue(isset($gallery['images'][0]['position']));
-            $this->assertTrue(isset($gallery['images'][0]['disabled']));
-            $this->assertArrayHasKey('label', $gallery['images'][0]);
+        // Model accepts only files in tmp media path, we need to copy fixture file there
+        $mediaFile = $this->_copyFileToBaseTmpMediaPath(dirname(dirname(__FILE__)) . '/_files/magento_image.jpg');
+
+        $this->_model->addImageToMediaGallery($mediaFile);
+        $gallery = $this->_model->getData('media_gallery');
+        $this->assertNotEmpty($gallery);
+        $this->assertTrue(isset($gallery['images'][0]['file']));
+        $this->assertStringStartsWith('/m/a/magento_image', $gallery['images'][0]['file']);
+        $this->assertTrue(isset($gallery['images'][0]['position']));
+        $this->assertTrue(isset($gallery['images'][0]['disabled']));
+        $this->assertArrayHasKey('label', $gallery['images'][0]);
+    }
+
+    /**
+     * Copy file to media tmp directory and return it's name
+     *
+     * @param string $sourceFile
+     * @return string
+     */
+    protected function _copyFileToBaseTmpMediaPath($sourceFile)
+    {
+        /** @var Mage_Catalog_Model_Product_Media_Config $config */
+        $config = Mage::getSingleton('Mage_Catalog_Model_Product_Media_Config');
+        $baseTmpMediaPath = $config->getBaseTmpMediaPath();
+
+        $targetFile = $baseTmpMediaPath . DS . basename($sourceFile);
+
+        /** @var Magento_Filesystem $filesystem */
+        $filesystem = Mage::getObjectManager()->create('Magento_Filesystem');
+        $filesystem->setIsAllowCreateDirectories(true);
+        $filesystem->copy($sourceFile, $targetFile);
+
+        return $targetFile;
     }
 
     /**
@@ -119,6 +143,14 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testDuplicateSkuGeneration()
+    {
+        $this->_model->load(1);
+        $this->assertEquals('simple', $this->_model->getSku());
+        $duplicated = $this->_model->duplicate();
+        $this->assertEquals('simple-1', $duplicated->getSku());
+    }
+
     /**
      * Delete model
      *
@@ -126,7 +158,7 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
      */
     protected function _undo($duplicate)
     {
-        Mage::app()->getStore()->setId(Mage_Core_Model_App::ADMIN_STORE_ID);
+        Mage::app()->getStore()->setId(Mage_Core_Model_AppInterface::ADMIN_STORE_ID);
         $duplicate->delete();
     }
 
@@ -240,7 +272,11 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($this->_model->isVirtual());
         $this->assertFalse($this->_model->getIsVirtual());
 
-        $model = new Mage_Catalog_Model_Product(array('type_id' => Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL));
+        /** @var $model Mage_Catalog_Model_Product */
+        $model = Mage::getModel(
+            'Mage_Catalog_Model_Product',
+            array('data' => array('type_id' => Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL))
+        );
         $this->assertTrue($model->isVirtual());
         $this->assertTrue($model->getIsVirtual());
     }
@@ -269,7 +305,11 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
     {
         $this->assertFalse($this->_model->isComposite());
 
-        $model = new Mage_Catalog_Model_Product(array('type_id' => Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE));
+        /** @var $model Mage_Catalog_Model_Product */
+        $model = Mage::getModel(
+            'Mage_Catalog_Model_Product',
+            array('data' => array('type_id' => Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE))
+        );
         $this->assertTrue($model->isComposite());
     }
 
@@ -301,7 +341,7 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
         $this->assertEmpty($this->_model->getOrigData());
 
         $storeId = Mage::app()->getStore()->getId();
-        Mage::app()->getStore()->setId(Mage_Core_Model_App::ADMIN_STORE_ID);
+        Mage::app()->getStore()->setId(Mage_Core_Model_AppInterface::ADMIN_STORE_ID);
         try {
             $this->_model->setOrigData('key', 'value');
             $this->assertEquals('value', $this->_model->getOrigData('key'));
@@ -330,7 +370,7 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
         $this->_model->reset();
         $this->_assertEmpty($model);
 
-        $this->_model->addOption(new Mage_Catalog_Model_Product_Option);
+        $this->_model->addOption(Mage::getModel('Mage_Catalog_Model_Product_Option'));
         $this->_model->reset();
         $this->_assertEmpty($model);
 
@@ -356,7 +396,7 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @magentoDataFixture Mage/Catalog/_files/two_products.php
+     * @magentoDataFixture Mage/Catalog/_files/multiple_products.php
      */
     public function testIsProductsHasSku()
     {
@@ -369,5 +409,22 @@ class Mage_Catalog_Model_ProductTest extends PHPUnit_Framework_TestCase
         $result = $this->_model->processBuyRequest($request);
         $this->assertInstanceOf('Varien_Object', $result);
         $this->assertArrayHasKey('errors', $result->getData());
+    }
+
+    public function testValidate()
+    {
+        $this->_model->setTypeId('simple')->setAttributeSetId(4)->setName('Simple Product')
+            ->setSku(uniqid('', true) . uniqid('', true) . uniqid('', true))->setPrice(10)->setMetaTitle('meta title')
+            ->setMetaKeyword('meta keyword')->setMetaDescription('meta description')
+            ->setVisibility(Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
+            ->setStatus(Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
+            ->setCollectExceptionMessages(true)
+        ;
+        $validationResult = $this->_model->validate();
+        $this->assertEquals('SKU length should be 64 characters maximum.', $validationResult['sku']);
+        unset($validationResult['sku']);
+        foreach ($validationResult as $error) {
+            $this->assertTrue($error);
+        }
     }
 }

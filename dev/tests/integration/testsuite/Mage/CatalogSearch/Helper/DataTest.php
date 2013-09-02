@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Magento_CatalogSearch
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,12 +34,7 @@ class Mage_CatalogSearch_Helper_DataTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->_helper = new Mage_CatalogSearch_Helper_Data;
-    }
-
-    protected function tearDown()
-    {
-        $this->_helper = null;
+        $this->_helper = Mage::helper('Mage_CatalogSearch_Helper_Data');
     }
 
     public function testGetResultUrl()
@@ -66,7 +61,11 @@ class Mage_CatalogSearch_Helper_DataTest extends PHPUnit_Framework_TestCase
      */
     public function testCheckNotesEscapesHtmlWhenQueryIsCut()
     {
-        $mock = $this->getMock('Mage_CatalogSearch_Helper_Data', array('getQueryText'));
+        /** @var $mock Mage_CatalogSearch_Helper_Data */
+        $mock = $this->getMock(
+            'Mage_CatalogSearch_Helper_Data',
+            array('getQueryText'), array(Mage::getObjectManager()->get('Mage_Core_Helper_Context'))
+        );
         $mock->expects($this->any())
             ->method('getQueryText')
             ->will($this->returnValue('five <words> here <being> tested'));

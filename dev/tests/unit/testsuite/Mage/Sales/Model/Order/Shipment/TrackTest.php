@@ -19,9 +19,9 @@
  * needs please refer to http://www.magentocommerce.com for more information.
  *
  * @category    Magento
- * @package     Mage_Sale
- * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @package     Mage_Sales
+ * @subpackage  unit_tests
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -34,7 +34,8 @@ class Mage_Sales_Model_Order_Shipment_TrackTest extends PHPUnit_Framework_TestCa
 
     protected function setUp()
     {
-        $this->_model = $this->getMock('Mage_Sales_Model_Order_Shipment_Track', null, array(), '', false);
+        $objectManagerHelper = new Magento_Test_Helper_ObjectManager($this);
+        $this->_model = $objectManagerHelper->getObject('Mage_Sales_Model_Order_Shipment_Track');
     }
 
     public function testAddData()
@@ -48,5 +49,54 @@ class Mage_Sales_Model_Order_Shipment_TrackTest extends PHPUnit_Framework_TestCa
 
         $this->assertTrue($this->_model->getTest());
         $this->assertEquals($number, $this->_model->getTrackNumber());
+    }
+
+    public function testGetStoreId()
+    {
+        $storeId = 10;
+        $storeObject = new Varien_Object(
+            array('id' => $storeId)
+        );
+
+        $shipmentMock = $this->getMock('Mage_Sales_Model_Order_Shipment', array('getStore'), array(), '', false);
+        $shipmentMock->expects($this->once())
+            ->method('getStore')
+            ->will($this->returnValue($storeObject));
+
+        $this->_model->setShipment($shipmentMock);
+        $this->assertEquals($storeId, $this->_model->getStoreId());
+    }
+
+    public function testSetGetNumber()
+    {
+        $this->assertNull($this->_model->getNumber());
+        $this->assertNull($this->_model->getTrackNumber());
+
+        $this->_model->setNumber('test');
+
+        $this->assertEquals('test', $this->_model->getNumber());
+        $this->assertEquals('test', $this->_model->getTrackNumber());
+    }
+
+    /**
+     * @dataProvider isCustomDataProvider
+     * @param bool $expectedResult
+     * @param string $carrierCodeToSet
+     */
+    public function testIsCustom($expectedResult, $carrierCodeToSet)
+    {
+        $this->_model->setCarrierCode($carrierCodeToSet);
+        $this->assertEquals($expectedResult, $this->_model->isCustom());
+    }
+
+    /**
+     * @return array
+     */
+    public static function isCustomDataProvider()
+    {
+        return array(
+            array(true, Mage_Sales_Model_Order_Shipment_Track::CUSTOM_CARRIER_CODE),
+            array(false, 'ups'),
+        );
     }
 }

@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Wishlist
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -32,7 +32,7 @@ class Mage_Wishlist_Block_Customer_Wishlist_Item_OptionsTest extends PHPUnit_Fra
 {
     public function testGetTemplate()
     {
-        $block = new Mage_Wishlist_Block_Customer_Wishlist_Item_Options;
+        $block = Mage::app()->getLayout()->createBlock('Mage_Wishlist_Block_Customer_Wishlist_Item_Options');
         $this->assertEmpty($block->getTemplate());
         $product = new Varien_Object(array('type_id' => 'test'));
         $item = new Varien_Object(array('product' => $product));

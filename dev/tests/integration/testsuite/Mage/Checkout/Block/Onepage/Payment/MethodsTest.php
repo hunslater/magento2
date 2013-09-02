@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Checkout
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -42,16 +42,11 @@ class Mage_Checkout_Block_Onepage_Payment_MethodsTest extends PHPUnit_Framework_
             ->createBlock('Mage_Checkout_Block_Onepage_Payment_Methods');
     }
 
-    protected function tearDown()
-    {
-        $this->_block = null;
-    }
-
     public function testGetMethodTitleAndMethodLabelAfterHtml()
     {
         $expectedTitle = 'Free Method';
         $expectedLabel = 'Label After Html';
-        $method = new Mage_Payment_Model_Method_Free;
+        $method = Mage::getModel('Mage_Payment_Model_Method_Free');
 
         $block = $this->_block->getLayout()->createBlock('Mage_Core_Block_Text')
             ->setMethodTitle($expectedTitle)

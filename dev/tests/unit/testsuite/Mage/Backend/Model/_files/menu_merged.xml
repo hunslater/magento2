@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 /**
  * Magento
@@ -22,18 +22,18 @@
  * @category    Magento
  * @package     Mage_Backend
  * @subpackage  unit_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 -->
 <config>
     <menu>
-        <add id="elem_one_zero" toolTip='toolTip 1' title="Title one.zero" module="Module_One" sortOrder="90" action="adminhtml/system" resource="/one/two" dependsOnModule="Module_One" dependsOnConfig="/one/two"/>
-        <add id="elem_one_one" toolTip='toolTip 2' title="Title one.one" module="Module_One" sortOrder="90" action="adminhtml/system" parent="elem_one_zero" />
+        <add id="elem_one_zero" toolTip='toolTip 1' title="Title one.zero" module="Module_One" sortOrder="90" action="adminhtml/system" resource="Module_One::one_zero" dependsOnModule="Module_One" dependsOnConfig="/one/two" />
+        <add id="elem_one_one" toolTip='toolTip 2' title="Title one.one" module="Module_One" sortOrder="90" action="adminhtml/system" parent="elem_one_zero" resource="Module_One::one_one" />
         <update id="elem_one_zero" toolTip='toolTip 3' title="Title one.zero update" module="Module_One_Update" sortOrder="90" action="adminhtml/system" parent="elem_one_zero" />
         <remove id="elem_one_one" />
-        <add id="elem_two_zero" toolTip='toolTip 4' title="Title two.zero" module="Module_Two" sortOrder="90" action="adminhtml/system" />
-        <add id="elem_two_two" toolTip='toolTip 5' title="Title two.two" module="Module_Two" sortOrder="90" action="adminhtml/system" parent="elem_two_zero" />
+        <add id="elem_two_zero" toolTip='toolTip 4' title="Title two.zero" module="Module_Two" sortOrder="90" action="adminhtml/system" resource="Module_Two::two_zero" />
+        <add id="elem_two_two" toolTip='toolTip 5' title="Title two.two" module="Module_Two" sortOrder="90" action="adminhtml/system" parent="elem_two_zero" resource="Module_Two::two_two" />
         <update id="elem_two_zero" toolTip='toolTip 6' title="Title two.zero update" module="Module_Two_Update" sortOrder="90" action="adminhtml/system" parent="elem_two_zero" />
         <remove id="elem_two_two" />
     </menu>

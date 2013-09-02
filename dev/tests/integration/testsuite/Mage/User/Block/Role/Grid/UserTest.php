@@ -21,12 +21,12 @@
  * @category    Magento
  * @package     Mage_User
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
 /**
- * @group module:Mage_User
+ * @magentoAppArea adminhtml
  */
 class Mage_User_Block_Role_Grid_UserTest extends PHPUnit_Framework_TestCase
 {
@@ -37,13 +37,8 @@ class Mage_User_Block_Role_Grid_UserTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $layout = new Mage_Core_Model_Layout();
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
         $this->_block = $layout->createBlock('Mage_User_Block_Role_Grid_User');
-    }
-
-    protected function tearDown()
-    {
-        $this->_block= null;
     }
 
     public function testPreparedCollection()

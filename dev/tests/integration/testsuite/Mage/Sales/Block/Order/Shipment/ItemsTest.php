@@ -21,7 +21,7 @@
  * @category    Magento
  * @package     Mage_Sales
  * @subpackage  integration_tests
- * @copyright   Copyright (c) 2012 Magento Inc. (http://www.magentocommerce.com)
+ * @copyright   Copyright (c) 2013 X.commerce, Inc. (http://www.magentocommerce.com)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -29,11 +29,10 @@ class Mage_Sales_Block_Order_Shipment_ItemsTest extends PHPUnit_Framework_TestCa
 {
     public function testGetCommentsHtml()
     {
-        $block = new Mage_Sales_Block_Order_Shipment_Items;
-        $layout = new Mage_Core_Model_Layout;
-        $layout->addBlock($block, 'block');
+        $layout = Mage::getModel('Mage_Core_Model_Layout');
+        $block = $layout->createBlock('Mage_Sales_Block_Order_Shipment_Items', 'block');
         $childBlock = $layout->addBlock('Mage_Core_Block_Text', 'shipment_comments', 'block');
-        $shipment = new Mage_Sales_Model_Order_Shipment;
+        $shipment = Mage::getModel('Mage_Sales_Model_Order_Shipment');
 
         $expectedHtml = '<b>Any html</b>';
         $this->assertEmpty($childBlock->getEntity());
